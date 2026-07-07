@@ -157,13 +157,9 @@ public:
                 {
                     //whisper to player "already have etc..."
                     Field* fields = result->Fetch();
-                    char msg[100];
-
                     std::string strtext = sObjectMgr->GetTrinityStringForDBCLocale2(NOT_USED_69);
-                    char const* text = strtext.c_str();
-
-                    snprintf(msg, sizeof(msg), text, fields[0].GetCString());
-                    _creature->Whisper(msg, LANG_UNIVERSAL, player);
+                    std::string msg = Trinity::StringFormat(strtext, fields[0].GetCString());
+                    _creature->Whisper(msg.c_str(), LANG_UNIVERSAL, player);
                 }
 
                 return true;
@@ -181,14 +177,10 @@ public:
             if ((int32)player->GetMoney() <= (int32)cost)
             {
                 //show how much money player need to buy GH (in gold)
-                char msg[100];
-
                 std::string strtext = sObjectMgr->GetTrinityStringForDBCLocale2(NOT_USED_70);
-                char const* text = strtext.c_str();
+                std::string msg = Trinity::StringFormat(strtext, cost);
 
-                snprintf(msg, sizeof(msg), text, cost);
-
-                _creature->Whisper(msg, LANG_UNIVERSAL, player);
+                _creature->Whisper(msg.c_str(), LANG_UNIVERSAL, player);
                 return;
             }
 
@@ -231,13 +223,9 @@ public:
 
                 player->ModifyMoney(myMoneys * 10000);
                 //display message e.g. "here your money etc."
-                char msg[255];
-
                 std::string strtext = sObjectMgr->GetTrinityStringForDBCLocale2(NOT_USED_71);
-                char const* text = strtext.c_str();
-
-                snprintf(msg, sizeof(msg), text, myMoneys);
-                _creature->Whisper(msg, LANG_UNIVERSAL, player);
+                std::string msg = Trinity::StringFormat(strtext, myMoneys);
+                _creature->Whisper(msg.c_str(), LANG_UNIVERSAL, player);
             }
         }
 

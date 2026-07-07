@@ -29,55 +29,15 @@ nsNpcTel::VCatDest nsNpcTel::TabCatDest;
 
 uint32 PAGE::operator [] (Player * const player) const
 {
-    for (VInst_t i(0); i < m_TabInstance.size(); ++i)
-    {
-        if (m_TabInstance[i].GetPlayer() == player)
-            return m_TabInstance[i].GetPageId();
-    }
+    auto it = m_PlayerPages.find(player->GetGUID());
+    if (it != m_PlayerPages.end())
+        return it->second;
     return 0;
 }
 
-PAGE::Instance & PAGE::operator () (Player * const player)
+uint32 & PAGE::operator () (Player * const player)
 {
-    for (VInst_t i(0); i < m_TabInstance.size(); ++i)
-    {
-        if (m_TabInstance[i].GetPlayer() == player)
-            return m_TabInstance[i];
-    }
-    m_TabInstance.push_back(Instance(player));
-    return m_TabInstance.back();
-}
-
-PAGE::Instance & PAGEI::operator = (const uint32 &id)
-{
-    m_PageId = id;
-    return *this;
-}
-
-PAGE::Instance & PAGEI::operator ++ (void)
-{
-    ++m_PageId;
-    return *this;
-}
-
-PAGE::Instance PAGEI::operator ++ (int32)
-{
-    Instance tmp (*this);
-    ++m_PageId;
-    return tmp;
-}
-
-PAGE::Instance & PAGEI::operator -- (void)
-{
-    --m_PageId;
-    return *this;
-}
-
-PAGE::Instance PAGEI::operator -- (int32)
-{
-    Instance tmp (*this);
-    --m_PageId;
-    return tmp;
+    return m_PlayerPages[player->GetGUID()];
 }
 
 TELE::CatDest(const CatValue cat, const CatName catname)

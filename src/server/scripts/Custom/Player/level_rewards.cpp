@@ -29,49 +29,13 @@ public:
     void OnLevelChanged(Player* player, uint8 oldlevel)
     {
         WorldSession* session = player->GetSession();
+        uint8 newLevel = oldlevel + 1;
 
-        switch (++oldlevel)
+        if (newLevel % 10 == 0 && newLevel <= 80)
         {
-        case 10:
             player->ModifyMoney(100000, true);
             player->AddItem(49426, 10);
             ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 20:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 30:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 40:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 50:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 60:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 70:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
-        case 80:
-            player->AddItem(49426, 10);
-            player->ModifyMoney(100000, true);
-            ChatHandler(player->GetSession()).PSendSysMessage(GTS2(NOT_USED_41));
-            break;
         }
     }
 };
