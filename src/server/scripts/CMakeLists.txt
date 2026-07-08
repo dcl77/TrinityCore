@@ -113,9 +113,11 @@ function(ConfigureScriptLoader SCRIPTLOADER_NAME LOADER_OUT IS_DYNAMIC_SCRIPTLOA
   # The current script project which is built in
   set(TRINITY_CURRENT_SCRIPT_PROJECT ${SCRIPTLOADER_NAME})
   foreach(LOCALE_SCRIPT_MODULE ${ARGN})
+    # Replace hyphens with underscores for valid C++ function names
+    string(REGEX REPLACE - "_" LOCALE_SCRIPT_MODULE_CLEAN ${LOCALE_SCRIPT_MODULE})
     # Determine the loader function ("Add##${NameOfDirectory}##Scripts()")
     set(LOADER_FUNCTION
-      "Add${LOCALE_SCRIPT_MODULE}Scripts()")
+      "Add${LOCALE_SCRIPT_MODULE_CLEAN}Scripts()")
     # Generate the funciton call and the forward declarations
     set(TRINITY_SCRIPTS_FORWARD_DECL
       "${TRINITY_SCRIPTS_FORWARD_DECL}void ${LOADER_FUNCTION};\n")
@@ -201,12 +203,13 @@ endforeach()
 # Add the dynamic script modules to the worldserver as dependency
 set(WORLDSERVER_DYNAMIC_SCRIPT_MODULES_DEPENDENCIES ${DYNAMIC_SCRIPT_MODULE_PROJECTS} PARENT_SCOPE)
 
-ConfigureScriptLoader("static" SCRIPT_MODULE_PRIVATE_SCRIPTLOADER OFF ${STATIC_SCRIPT_MODULES})
+ConfigureScriptLoader("static" SCRIPT_MODULE_PRIVATE_SCRIPTLOADER OFF ${STATIC_SCRIPT_MODULES} ${MOD_SCRIPTS_LIST})
 
 add_library(scripts STATIC
   ScriptLoader.h
   ${SCRIPT_MODULE_PRIVATE_SCRIPTLOADER}
-  ${PRIVATE_SOURCES})
+  ${PRIVATE_SOURCES}
+  ${MOD_SOURCES_LIST})
 
 target_link_libraries(scripts
   PRIVATE
