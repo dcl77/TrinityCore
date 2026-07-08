@@ -290,8 +290,8 @@ struct BattlegroundABScore final : public BattlegroundScore
 
         void BuildObjectivesBlock(WorldPacket& data) final override;
 
-        uint32 GetAttr1() const final override { return BasesAssaulted; }
-        uint32 GetAttr2() const final override { return BasesDefended; }
+        int32 GetAttr1() const final override { return BasesAssaulted; }
+        int32 GetAttr2() const final override { return BasesDefended; }
 
         uint32 BasesAssaulted;
         uint32 BasesDefended;
@@ -310,7 +310,7 @@ class BattlegroundAB : public Battleground
         void HandleAreaTrigger(Player* Source, uint32 Trigger) override;
         bool SetupBattleground() override;
         void Reset() override;
-        void EndBattleground(uint32 winner) override;
+        uint64 EndBattleground(uint32 winner) override;
         WorldSafeLocsEntry const* GetClosestGraveyard(Player* player) override;
 
         /* Scorekeeping */

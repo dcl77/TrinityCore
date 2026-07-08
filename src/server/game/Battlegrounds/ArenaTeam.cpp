@@ -797,7 +797,7 @@ int32 ArenaTeam::LostAgainst(uint32 Own_MMRating, uint32 Opponent_MMRating, int3
     return mod;
 }
 
-void ArenaTeam::MemberLost(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
+int32 ArenaTeam::MemberLost(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
 {
     // Called for each participant of a match after losing
     for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
@@ -818,12 +818,13 @@ void ArenaTeam::MemberLost(Player* player, uint32 againstMatchmakerRating, int32
             // update the unit fields
             player->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_GAMES_WEEK,  itr->WeekGames);
             player->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_GAMES_SEASON,  itr->SeasonGames);
-            return;
+            return mod;
         }
     }
+    return 0;
 }
 
-void ArenaTeam::OfflineMemberLost(ObjectGuid guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
+int32 ArenaTeam::OfflineMemberLost(ObjectGuid guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
 {
     // Called for offline player after ending rated arena match!
     for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
@@ -840,12 +841,13 @@ void ArenaTeam::OfflineMemberLost(ObjectGuid guid, uint32 againstMatchmakerRatin
             // update personal played stats
             itr->WeekGames += 1;
             itr->SeasonGames += 1;
-            return;
+            return mod;
         }
     }
+    return 0;
 }
 
-void ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
+int32 ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange)
 {
     // called for each participant after winning a match
     for (MemberList::iterator itr = Members.begin(); itr != Members.end(); ++itr)
@@ -867,9 +869,10 @@ void ArenaTeam::MemberWon(Player* player, uint32 againstMatchmakerRating, int32 
             // update unit fields
             player->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_GAMES_WEEK, itr->WeekGames);
             player->SetArenaTeamInfoField(GetSlot(), ARENA_TEAM_GAMES_SEASON, itr->SeasonGames);
-            return;
+            return mod;
         }
     }
+    return 0;
 }
 
 void ArenaTeam::UpdateArenaPointsHelper(std::map<ObjectGuid, uint32>& playerPoints)

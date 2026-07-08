@@ -453,7 +453,7 @@ void BattlegroundAV::AddPlayer(Player* player)
         PlayerScores[player->GetGUID()] = new BattlegroundAVScore(player->GetGUID());
 }
 
-void BattlegroundAV::EndBattleground(uint32 winner)
+uint64 BattlegroundAV::EndBattleground(uint32 winner)
 {
     //calculate bonuskills for both teams:
     //first towers:
@@ -490,7 +490,7 @@ void BattlegroundAV::EndBattleground(uint32 winner)
     }
 
     /// @todo add enterevademode for all attacking creatures
-    Battleground::EndBattleground(winner);
+    return Battleground::EndBattleground(winner);
 }
 
 void BattlegroundAV::RemovePlayer(Player* player, ObjectGuid /*guid*/, uint32 /*team*/)

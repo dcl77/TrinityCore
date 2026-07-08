@@ -1604,11 +1604,11 @@ struct BattlegroundAVScore final : public BattlegroundScore
 
         void BuildObjectivesBlock(WorldPacket& data) final override;
 
-        uint32 GetAttr1() const final override { return GraveyardsAssaulted; }
-        uint32 GetAttr2() const final override { return GraveyardsDefended; }
-        uint32 GetAttr3() const final override { return TowersAssaulted; }
-        uint32 GetAttr4() const final override { return TowersDefended; }
-        uint32 GetAttr5() const final override { return MinesCaptured; }
+        int32 GetAttr1() const final override { return GraveyardsAssaulted; }
+        int32 GetAttr2() const final override { return GraveyardsDefended; }
+        int32 GetAttr3() const final override { return TowersAssaulted; }
+        int32 GetAttr4() const final override { return TowersDefended; }
+        int32 GetAttr5() const final override { return MinesCaptured; }
 
         uint32 GraveyardsAssaulted;
         uint32 GraveyardsDefended;
@@ -1644,7 +1644,7 @@ class BattlegroundAV : public Battleground
         void HandleQuestComplete(uint32 questid, Player* player) override;
         bool CanActivateGO(int32 GOId, uint32 team) const override;
 
-        void EndBattleground(uint32 winner) override;
+        uint64 EndBattleground(uint32 winner) override;
 
         WorldSafeLocsEntry const* GetClosestGraveyard(Player* player) override;
 

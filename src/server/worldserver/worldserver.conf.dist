@@ -2700,6 +2700,14 @@ Battleground.QueueAnnouncer.PlayerOnly = 0
 Battleground.StoreStatistics.Enable = 0
 
 #
+#    Arena.StoreStatistics.Enable
+#        Description: Store Arena scores in the database.
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+Arena.StoreStatistics.Enable = 0
+
+#
 #    Battleground.TrackDeserters.Enable
 #        Description: Track deserters of Battlegrounds.
 #        Default:     0 - (Disabled)

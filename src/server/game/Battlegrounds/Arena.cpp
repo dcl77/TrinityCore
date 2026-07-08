@@ -163,7 +163,7 @@ void Arena::CheckWinConditions()
         EndBattleground(ALLIANCE);
 }
 
-void Arena::EndBattleground(uint32 winner)
+uint64 Arena::EndBattleground(uint32 winner)
 {
     // arena rating calculation
     if (isRated())
@@ -270,14 +270,33 @@ void Arena::EndBattleground(uint32 winner)
                     if (GetArenaType() == ARENA_TYPE_5v5 && aliveWinners == 1 && player->IsAlive())
                         player->CastSpell(player, SPELL_LAST_MAN_STANDING, true);
 
-                    winnerArenaTeam->MemberWon(player, loserMatchmakerRating, winnerMatchmakerChange);
+                    int32 ratingChange = winnerArenaTeam->MemberWon(player, loserMatchmakerRating, winnerMatchmakerChange);
+                    if (ArenaScore* score = dynamic_cast<ArenaScore*>(PlayerScores[player->GetGUID()]))
+                    {
+                        score->RatingChange = ratingChange;
+                        score->MatchmakerRating = player->GetArenaMatchMakerRating(winnerArenaTeam->GetSlot());
+                    }
                 }
                 else
                 {
                     if (winner == 0)
-                        winnerArenaTeam->MemberLost(player, loserMatchmakerRating, winnerMatchmakerChange);
-
-                    loserArenaTeam->MemberLost(player, winnerMatchmakerRating, loserMatchmakerChange);
+                    {
+                        int32 ratingChange = winnerArenaTeam->MemberLost(player, loserMatchmakerRating, winnerMatchmakerChange);
+                        if (ArenaScore* score = dynamic_cast<ArenaScore*>(PlayerScores[player->GetGUID()]))
+                        {
+                            score->RatingChange = ratingChange;
+                            score->MatchmakerRating = player->GetArenaMatchMakerRating(winnerArenaTeam->GetSlot());
+                        }
+                    }
+                    else
+                    {
+                        int32 ratingChange = loserArenaTeam->MemberLost(player, winnerMatchmakerRating, loserMatchmakerChange);
+                        if (ArenaScore* score = dynamic_cast<ArenaScore*>(PlayerScores[player->GetGUID()]))
+                        {
+                            score->RatingChange = ratingChange;
+                            score->MatchmakerRating = player->GetArenaMatchMakerRating(loserArenaTeam->GetSlot());
+                        }
+                    }
 
                     // Arena lost => reset the win_rated_arena having the "no_lose" condition
                     player->ResetAchievementCriteria(ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE, 0);
@@ -299,5 +318,42 @@ void Arena::EndBattleground(uint32 winner)
     }
 
     // end battleground
-    Battleground::EndBattleground(winner);
+    uint64 battlegroundId = Battleground::EndBattleground(winner);
+
+    if (battlegroundId && isRated() && sWorld->getBoolConfig(CONFIG_ARENA_STORE_STATISTICS_ENABLE))
+    {
+        ArenaTeam* winnerArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner == 0 ? uint32(ALLIANCE) : winner));
+        ArenaTeam* loserArenaTeam = sArenaTeamMgr->GetArenaTeamById(GetArenaTeamIdForTeam(winner == 0 ? uint32(HORDE) : GetOtherTeam(winner)));
+
+        if (winnerArenaTeam && loserArenaTeam && winnerArenaTeam != loserArenaTeam)
+        {
+            // bg team that the client expects is different to TeamId
+            // alliance 1, horde 0
+            uint8 winnerTeam = winner == ALLIANCE ? PVP_TEAM_ALLIANCE : PVP_TEAM_HORDE;
+            uint8 loserTeam = winner == ALLIANCE ? PVP_TEAM_HORDE : PVP_TEAM_ALLIANCE;
+
+            int32 winnerChange = _arenaTeamScores[winnerTeam].RatingChange;
+            int32 loserChange = _arenaTeamScores[loserTeam].RatingChange;
+            uint32 winnerMatchmakerRating = _arenaTeamScores[winnerTeam].MatchmakerRating;
+            uint32 loserMatchmakerRating = _arenaTeamScores[loserTeam].MatchmakerRating;
+
+            CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVPSTATS_ARENA_TEAM);
+            stmt->setUInt64(0, battlegroundId);
+            stmt->setUInt32(1, winnerArenaTeam->GetId());
+            stmt->setUInt8 (2, 1); // winner
+            stmt->setInt32 (3, winnerChange);
+            stmt->setUInt32(4, winnerMatchmakerRating);
+            CharacterDatabase.Execute(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVPSTATS_ARENA_TEAM);
+            stmt->setUInt64(0, battlegroundId);
+            stmt->setUInt32(1, loserArenaTeam->GetId());
+            stmt->setUInt8 (2, 0); // loser
+            stmt->setInt32 (3, loserChange);
+            stmt->setUInt32(4, loserMatchmakerRating);
+            CharacterDatabase.Execute(stmt);
+        }
+    }
+
+    return battlegroundId;
 }

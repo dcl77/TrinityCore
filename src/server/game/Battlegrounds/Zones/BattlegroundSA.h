@@ -541,8 +541,8 @@ struct BattlegroundSAScore final : public BattlegroundScore
 
         void BuildObjectivesBlock(WorldPacket& data) final override;
 
-        uint32 GetAttr1() const final override { return DemolishersDestroyed; }
-        uint32 GetAttr2() const final override { return GatesDestroyed; }
+        int32 GetAttr1() const final override { return DemolishersDestroyed; }
+        int32 GetAttr2() const final override { return GatesDestroyed; }
 
         uint32 DemolishersDestroyed;
         uint32 GatesDestroyed;
@@ -594,7 +594,7 @@ class BattlegroundSA : public Battleground
         }
 
         /// Called on battleground ending
-        void EndBattleground(uint32 winner) override;
+        uint64 EndBattleground(uint32 winner) override;
 
         /// Called when a player leave battleground
         void RemovePlayer(Player* player, ObjectGuid guid, uint32 team) override;

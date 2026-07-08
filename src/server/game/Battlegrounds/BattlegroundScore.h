@@ -105,11 +105,11 @@ struct BattlegroundScore
         uint32 GetDamageDone() const      { return DamageDone; }
         uint32 GetHealingDone() const     { return HealingDone; }
 
-        virtual uint32 GetAttr1() const { return 0; }
-        virtual uint32 GetAttr2() const { return 0; }
-        virtual uint32 GetAttr3() const { return 0; }
-        virtual uint32 GetAttr4() const { return 0; }
-        virtual uint32 GetAttr5() const { return 0; }
+        virtual int32 GetAttr1() const { return 0; }
+        virtual int32 GetAttr2() const { return 0; }
+        virtual int32 GetAttr3() const { return 0; }
+        virtual int32 GetAttr4() const { return 0; }
+        virtual int32 GetAttr5() const { return 0; }
 
         ObjectGuid PlayerGuid;
 

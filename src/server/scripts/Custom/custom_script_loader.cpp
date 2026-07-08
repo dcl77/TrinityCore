@@ -65,6 +65,7 @@ void AddSC_Mod_BossHistory();
 void AddSC_npc_title();
 void AddSC_Mod_GuildDefault();
 void AddSC_npc_hunterpetvendor();
+void AddSC_npc_spectator();
 void AddSC_Mod_Tournaments();
 void AddSC_lighthardmode();
 void AddSC_orrig();
@@ -109,6 +110,7 @@ void AddCustomScripts()
     AddSC_npc_title();
     AddSC_Mod_GuildDefault();
     AddSC_npc_hunterpetvendor();
+    AddSC_npc_spectator();
     AddSC_lighthardmode();
     AddSC_orrig();
     AddSC_light();

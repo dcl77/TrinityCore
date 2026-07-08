@@ -188,8 +188,8 @@ struct BattlegroundWGScore final : public BattlegroundScore
 
         void BuildObjectivesBlock(WorldPacket& data) final override;
 
-        uint32 GetAttr1() const final override { return FlagCaptures; }
-        uint32 GetAttr2() const final override { return FlagReturns; }
+        int32 GetAttr1() const final override { return FlagCaptures; }
+        int32 GetAttr2() const final override { return FlagReturns; }
 
         uint32 FlagCaptures;
         uint32 FlagReturns;
@@ -233,7 +233,7 @@ class BattlegroundWS : public Battleground
         void HandleKillPlayer(Player* player, Player* killer) override;
         bool SetupBattleground() override;
         void Reset() override;
-        void EndBattleground(uint32 winner) override;
+        uint64 EndBattleground(uint32 winner) override;
         WorldSafeLocsEntry const* GetClosestGraveyard(Player* player) override;
 
         void UpdateFlagState(uint32 team, uint32 value);

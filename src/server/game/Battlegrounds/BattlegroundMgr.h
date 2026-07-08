@@ -144,6 +144,7 @@ class TC_GAME_API BattlegroundMgr
         BattlegroundTypeId GetRandomBG(BattlegroundTypeId id);
 
         typedef std::map<BattlegroundTypeId, BattlegroundData> BattlegroundDataContainer;
+        BattlegroundDataContainer const& GetBattlegroundDataStore() const { return bgDataStore; }
         BattlegroundDataContainer bgDataStore;
 
         BattlegroundQueue m_BattlegroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES];

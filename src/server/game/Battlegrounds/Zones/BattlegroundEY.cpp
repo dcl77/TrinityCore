@@ -314,7 +314,7 @@ void BattlegroundEY::UpdateTeamScore(uint32 Team)
         UpdateWorldState(EY_HORDE_RESOURCES, score);
 }
 
-void BattlegroundEY::EndBattleground(uint32 winner)
+uint64 BattlegroundEY::EndBattleground(uint32 winner)
 {
     // Win reward
     if (winner == ALLIANCE)
@@ -325,7 +325,7 @@ void BattlegroundEY::EndBattleground(uint32 winner)
     RewardHonorToTeam(GetBonusHonorFromKill(1), ALLIANCE);
     RewardHonorToTeam(GetBonusHonorFromKill(1), HORDE);
 
-    Battleground::EndBattleground(winner);
+    return Battleground::EndBattleground(winner);
 }
 
 void BattlegroundEY::UpdatePointsCount(uint32 Team)

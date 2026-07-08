@@ -60,7 +60,7 @@ class TC_GAME_API Arena : public Battleground
     private:
         void RemovePlayerAtLeave(ObjectGuid guid, bool transport, bool sendPacket) override;
         void CheckWinConditions() override;
-        void EndBattleground(uint32 winner) override;
+        uint64 EndBattleground(uint32 winner) override;
 };
 
 #endif // TRINITY_ARENA_H

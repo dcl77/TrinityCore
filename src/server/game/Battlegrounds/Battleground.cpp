@@ -702,7 +702,7 @@ void Battleground::UpdateWorldState(uint32 variable, uint32 value)
     SendPacketToAll(worldstate.Write());
 }
 
-void Battleground::EndBattleground(uint32 winner)
+uint64 Battleground::EndBattleground(uint32 winner)
 {
     RemoveFromBGFreeSlotQueue();
 
@@ -730,8 +730,9 @@ void Battleground::EndBattleground(uint32 winner)
     }
 
     CharacterDatabasePreparedStatement* stmt = nullptr;
-    uint64 battlegroundId = 1;
-    if (isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_STORE_STATISTICS_ENABLE))
+    uint64 battlegroundId = 0;
+    bool storeStats = (isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_STORE_STATISTICS_ENABLE)) || (isArena() && sWorld->getBoolConfig(CONFIG_ARENA_STORE_STATISTICS_ENABLE));
+    if (storeStats)
     {
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PVPSTATS_MAXID);
         PreparedQueryResult result = CharacterDatabase.Query(stmt);
@@ -741,12 +742,15 @@ void Battleground::EndBattleground(uint32 winner)
             Field* fields = result->Fetch();
             battlegroundId = fields[0].GetUInt64() + 1;
         }
+        else
+            battlegroundId = 1;
 
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVPSTATS_BATTLEGROUND);
         stmt->setUInt64(0, battlegroundId);
         stmt->setUInt8(1, GetWinner());
         stmt->setUInt8(2, GetUniqueBracketId());
         stmt->setUInt8(3, GetTypeID(true));
+        stmt->setUInt8(4, isRated() ? 1 : 0);
         CharacterDatabase.Execute(stmt);
     }
 
@@ -784,7 +788,7 @@ void Battleground::EndBattleground(uint32 winner)
         uint32 loser_kills = player->GetRandomWinner() ? sWorld->getIntConfig(CONFIG_BG_REWARD_LOSER_HONOR_LAST) : sWorld->getIntConfig(CONFIG_BG_REWARD_LOSER_HONOR_FIRST);
         uint32 winner_arena = player->GetRandomWinner() ? sWorld->getIntConfig(CONFIG_BG_REWARD_WINNER_ARENA_LAST) : sWorld->getIntConfig(CONFIG_BG_REWARD_WINNER_ARENA_FIRST);
 
-        if (isBattleground() && sWorld->getBoolConfig(CONFIG_BATTLEGROUND_STORE_STATISTICS_ENABLE))
+        if (storeStats)
         {
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PVPSTATS_PLAYER);
             BattlegroundScoreMap::const_iterator score = PlayerScores.find(player->GetGUID());
@@ -798,11 +802,11 @@ void Battleground::EndBattleground(uint32 winner)
             stmt->setUInt32(6,  score->second->GetBonusHonor());
             stmt->setUInt32(7,  score->second->GetDamageDone());
             stmt->setUInt32(8,  score->second->GetHealingDone());
-            stmt->setUInt32(9,  score->second->GetAttr1());
-            stmt->setUInt32(10, score->second->GetAttr2());
-            stmt->setUInt32(11, score->second->GetAttr3());
-            stmt->setUInt32(12, score->second->GetAttr4());
-            stmt->setUInt32(13, score->second->GetAttr5());
+            stmt->setInt32 (9,  score->second->GetAttr1());
+            stmt->setInt32 (10, score->second->GetAttr2());
+            stmt->setInt32 (11, score->second->GetAttr3());
+            stmt->setInt32 (12, score->second->GetAttr4());
+            stmt->setInt32 (13, score->second->GetAttr5());
 
             CharacterDatabase.Execute(stmt);
         }
@@ -851,6 +855,8 @@ void Battleground::EndBattleground(uint32 winner)
     if (Eluna* e = GetBgMap()->GetEluna())
         e->OnBGEnd(this, GetTypeID(), GetInstanceID(), Team(winner));
 #endif
+
+    return battlegroundId;
 }
 
 uint32 Battleground::GetBonusHonorFromKill(uint32 kills) const

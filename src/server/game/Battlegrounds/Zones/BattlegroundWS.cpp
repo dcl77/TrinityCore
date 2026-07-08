@@ -783,7 +783,7 @@ void BattlegroundWS::Reset()
     _flagsTimer[TEAM_HORDE]          = 0;
 }
 
-void BattlegroundWS::EndBattleground(uint32 winner)
+uint64 BattlegroundWS::EndBattleground(uint32 winner)
 {
     // Win reward
     if (winner == ALLIANCE)
@@ -794,7 +794,7 @@ void BattlegroundWS::EndBattleground(uint32 winner)
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), ALLIANCE);
     RewardHonorToTeam(GetBonusHonorFromKill(m_HonorEndKills), HORDE);
 
-    Battleground::EndBattleground(winner);
+    return Battleground::EndBattleground(winner);
 }
 
 void BattlegroundWS::HandleKillPlayer(Player* player, Player* killer)

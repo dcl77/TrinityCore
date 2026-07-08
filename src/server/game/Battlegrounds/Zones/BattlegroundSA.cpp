@@ -965,7 +965,7 @@ void BattlegroundSA::ToggleTimer()
     UpdateWorldState(BG_SA_ENABLE_TIMER, TimerEnabled);
 }
 
-void BattlegroundSA::EndBattleground(uint32 winner)
+uint64 BattlegroundSA::EndBattleground(uint32 winner)
 {
     // honor reward for winning
     if (winner == ALLIANCE)
@@ -977,7 +977,7 @@ void BattlegroundSA::EndBattleground(uint32 winner)
     RewardHonorToTeam(GetBonusHonorFromKill(2), ALLIANCE);
     RewardHonorToTeam(GetBonusHonorFromKill(2), HORDE);
 
-    Battleground::EndBattleground(winner);
+    return Battleground::EndBattleground(winner);
 }
 
 void BattlegroundSA::UpdateDemolisherSpawns()

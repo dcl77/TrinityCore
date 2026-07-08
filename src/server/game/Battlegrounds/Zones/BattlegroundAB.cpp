@@ -631,7 +631,7 @@ void BattlegroundAB::Reset()
             DelCreature(i);
 }
 
-void BattlegroundAB::EndBattleground(uint32 winner)
+uint64 BattlegroundAB::EndBattleground(uint32 winner)
 {
     // Win reward
     if (winner == ALLIANCE)
@@ -642,7 +642,7 @@ void BattlegroundAB::EndBattleground(uint32 winner)
     RewardHonorToTeam(GetBonusHonorFromKill(1), HORDE);
     RewardHonorToTeam(GetBonusHonorFromKill(1), ALLIANCE);
 
-    Battleground::EndBattleground(winner);
+    return Battleground::EndBattleground(winner);
 }
 
 WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveyard(Player* player)

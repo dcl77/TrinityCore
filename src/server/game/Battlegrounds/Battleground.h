@@ -390,7 +390,7 @@ class TC_GAME_API Battleground
         //void RewardReputationToTeam(uint32 faction_id, uint32 Reputation, uint32 TeamID);
         void RewardReputationToTeam(uint32 a_faction_id, uint32 h_faction_id, uint32 Reputation, uint32 TeamID);
         void UpdateWorldState(uint32 variable, uint32 value);
-        virtual void EndBattleground(uint32 winner);
+        virtual uint64 EndBattleground(uint32 winner);
         void BlockMovement(Player* player);
 
         void SendMessageToAll(uint32 entry, ChatMsg type, Player const* source = nullptr);

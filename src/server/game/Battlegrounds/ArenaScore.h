@@ -26,7 +26,8 @@ struct TC_GAME_API ArenaScore : public BattlegroundScore
     friend class Arena;
 
     protected:
-        ArenaScore(ObjectGuid playerGuid, uint32 team) : BattlegroundScore(playerGuid), TeamId(team == ALLIANCE ? PVP_TEAM_ALLIANCE : PVP_TEAM_HORDE) { }
+        ArenaScore(ObjectGuid playerGuid, uint32 team) : BattlegroundScore(playerGuid),
+            TeamId(team == ALLIANCE ? PVP_TEAM_ALLIANCE : PVP_TEAM_HORDE), RatingChange(0), MatchmakerRating(0) { }
 
         void AppendToPacket(WorldPacket& data) final override;
         void BuildObjectivesBlock(WorldPacket& data) final override;
@@ -39,7 +40,12 @@ struct TC_GAME_API ArenaScore : public BattlegroundScore
             return stream.str();
         }
 
+        int32 GetAttr1() const final override { return RatingChange; }
+        int32 GetAttr2() const final override { return (int32)MatchmakerRating; }
+
         uint8 TeamId; // PvPTeamId
+        int32 RatingChange;
+        uint32 MatchmakerRating;
 };
 
 struct TC_GAME_API ArenaTeamScore
@@ -47,7 +53,7 @@ struct TC_GAME_API ArenaTeamScore
     friend class Arena;
     friend class Battleground;
 
-    protected:
+    public:
         ArenaTeamScore() : RatingChange(0), MatchmakerRating(0) { }
 
         virtual ~ArenaTeamScore() { }
