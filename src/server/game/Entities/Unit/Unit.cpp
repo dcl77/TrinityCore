@@ -10361,7 +10361,7 @@ void Unit::RecalculateObjectScale()
     SetObjectScale(std::max(scale, scaleMin));
 }
 
-void Unit::SetDisplayId(uint32 modelId)
+void Unit::SetDisplayId(uint32 modelId, float displayScale /*= 1.0f*/)
 {
     SetUInt32Value(UNIT_FIELD_DISPLAYID, modelId);
     // Set Gender by modelId
@@ -13729,7 +13729,7 @@ void Unit::PatchValuesUpdate(ByteBuffer& valuesUpdateBuf, BuildValuesCachePosPoi
 
             if (cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER)
                 if (target->IsGameMaster())
-                    displayId = cinfo->GetFirstVisibleModel();
+                    displayId = cinfo->GetFirstVisibleModel()->CreatureDisplayID;
         }
 
         valuesUpdateBuf.put(posPointers.UnitFieldDisplayPos, uint32(displayId));
