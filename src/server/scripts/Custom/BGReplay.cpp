@@ -2158,8 +2158,7 @@ namespace
         bg->SetStatus(STATUS_IN_PROGRESS);
 
         WorldPacket status;
-        BattlegroundQueueTypeId bgQueueTypeId = BattlegroundMgr::BGQueueTypeId(bg->GetTypeID(), bg->GetArenaType());
-        uint32 queueSlot = viewer->GetBattlegroundQueueIndex(bgQueueTypeId);
+        uint32 queueSlot = 0;
         sBattlegroundMgr->BuildBattlegroundStatusPacket(&status, bg, queueSlot, STATUS_IN_PROGRESS, 0, 0, bg->GetArenaType(), viewer->GetBGTeam());
         viewer->SendDirectMessage(&status);
         return true;
