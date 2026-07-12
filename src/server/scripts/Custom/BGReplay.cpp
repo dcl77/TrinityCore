@@ -1223,6 +1223,10 @@ namespace
                 RewriteFirstRawGuidIfReplayActor(payload, match);
                 return;
             }
+            case SMSG_BATTLEGROUND_PLAYER_JOINED:
+            case SMSG_BATTLEGROUND_PLAYER_LEFT:
+                RewriteRawGuidAt(payload, 0, match);
+                return;
             default:
                 return;
         }
