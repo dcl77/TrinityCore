@@ -295,21 +295,18 @@ void WardenWin::RequestChecks()
 
     for (WardenCheckCategory category : EnumUtils::Iterate<WardenCheckCategory>())
     {
+        if (category == LUA_CHECK_CATEGORY && !_payloadMgr.QueuedPayloads.empty())
+        {
+            // Custom payloads are processed below after the shuffle to preserve their exact order
+            continue;
+        }
+
         if (IsWardenCategoryInWorldOnly(category) && !_session->GetPlayer())
             continue;
 
         auto& [checks, checksIt] = _checks[category];
         for (uint32 i = 0, n = sWorld->getIntConfig(GetWardenCategoryCountConfig(category)); i < n; ++i)
         {
-            if (category == LUA_CHECK_CATEGORY && !_payloadMgr.QueuedPayloads.empty())
-            {
-                uint16 payloadId = _payloadMgr.QueuedPayloads.front();
-                TC_LOG_DEBUG("warden", "Adding custom warden payload '{}' to _currentChecks.", payloadId);
-                _payloadMgr.QueuedPayloads.pop_front();
-                _currentChecks.push_back(payloadId);
-                continue;
-            }
-
             if (checksIt == checks.end()) // all checks were already sent, list will be re-filled on next Update() run
                 break;
             _currentChecks.push_back(*(checksIt++));
@@ -317,6 +314,18 @@ void WardenWin::RequestChecks()
     }
 
     Trinity::Containers::RandomShuffle(_currentChecks);
+
+    // Append custom payloads to the end of _currentChecks in order!
+    if (!_payloadMgr.QueuedPayloads.empty())
+    {
+        while (!_payloadMgr.QueuedPayloads.empty())
+        {
+            uint16 payloadId = _payloadMgr.QueuedPayloads.front();
+            TC_LOG_DEBUG("warden", "Adding custom warden payload '{}' to _currentChecks in order.", payloadId);
+            _payloadMgr.QueuedPayloads.pop_front();
+            _currentChecks.push_back(payloadId);
+        }
+    }
 
     uint16 expectedSize = 4;
     Trinity::Containers::EraseIf(_currentChecks,
