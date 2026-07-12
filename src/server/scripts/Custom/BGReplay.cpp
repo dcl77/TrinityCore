@@ -23,6 +23,7 @@
 #include "WorldSession.h"
 #include "World.h"
 #include "ChatPackets.h"
+#include "QueryPackets.h"
 #include <DBCStores.h>
 #include <algorithm>
 #include <cmath>
@@ -2087,16 +2088,18 @@ namespace
     {
         if (!session)
             return;
-        WorldPacket data(SMSG_NAME_QUERY_RESPONSE, 8 + 1 + actor.Name.size() + 1 + 1 + 1 + 1 + 1);
-        data << actor.FakeGuid.WriteAsPacked();
-        data << uint8(0);
-        data << actor.Name;
-        data << uint8(0);
-        data << uint8(actor.Race);
-        data << uint8(actor.Gender);
-        data << uint8(actor.Class);
-        data << uint8(0);
-        session->SendPacket(&data);
+
+        WorldPackets::Query::QueryPlayerNameResponse response;
+        response.Player = actor.FakeGuid;
+        response.Result = RESPONSE_SUCCESS;
+
+        WorldPackets::Query::PlayerGuidLookupData& data = response.Data.emplace();
+        data.Name = actor.Name;
+        data.Race = actor.Race;
+        data.Sex = Gender(actor.Gender);
+        data.ClassID = actor.Class;
+
+        session->SendPacket(response.Write());
     }
 
     void SendDestroyObjectToReplayViewer(Player* viewer, ObjectGuid guid, char const* reason)
