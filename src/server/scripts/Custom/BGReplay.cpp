@@ -3850,6 +3850,25 @@ public:
     }
 };
 
+bool IsFakeReplayPlayerGuid(ObjectGuid guid, std::string& name, uint8& race, uint8& gender, uint8& classId)
+{
+    for (auto const& active : ActiveReplays)
+    {
+        for (ReplayActor const& actor : active.second.Match.Actors)
+        {
+            if (actor.FakeGuid == guid)
+            {
+                name = actor.Name;
+                race = actor.Race;
+                gender = actor.Gender;
+                classId = actor.Class;
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void AddBGReplayScripts()
 {
     new BGReplayServerScript();

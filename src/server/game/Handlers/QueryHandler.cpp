@@ -33,8 +33,28 @@
 #include "UpdateMask.h"
 #include "World.h"
 
+extern bool IsFakeReplayPlayerGuid(ObjectGuid guid, std::string& name, uint8& race, uint8& gender, uint8& classId);
+
 void WorldSession::SendNameQueryOpcode(ObjectGuid guid)
 {
+    std::string fakeName;
+    uint8 fakeRace = 0, fakeGender = 0, fakeClass = 0;
+    if (IsFakeReplayPlayerGuid(guid, fakeName, fakeRace, fakeGender, fakeClass))
+    {
+        WorldPackets::Query::QueryPlayerNameResponse response;
+        response.Player = guid;
+        response.Result = RESPONSE_SUCCESS;
+
+        WorldPackets::Query::PlayerGuidLookupData& data = response.Data.emplace();
+        data.Name = fakeName;
+        data.Race = fakeRace;
+        data.Sex = Gender(fakeGender);
+        data.ClassID = fakeClass;
+
+        SendPacket(response.Write());
+        return;
+    }
+
     Player* player = ObjectAccessor::FindConnectedPlayer(guid);
 
     WorldPackets::Query::QueryPlayerNameResponse response;
