@@ -249,6 +249,12 @@ bool Warden::ProcessLuaCheckResponse(std::string const& msg)
 
     uint16 id = 0;
     std::from_chars(msg.data() + sizeof(WARDEN_TOKEN) - 1, msg.data() + msg.size(), id, 10);
+    if (id >= WardenPayloadMgr::WardenPayloadOffsetMin && id <= WardenPayloadMgr::WardenPayloadOffsetMax)
+    {
+        TC_LOG_DEBUG("warden", "ProcessLuaCheckResponse: Received response for custom payload id {}", id);
+        return true;
+    }
+
     if (id < sWardenCheckMgr->GetMaxValidCheckId())
     {
         WardenCheck const& check = sWardenCheckMgr->GetCheckData(id);

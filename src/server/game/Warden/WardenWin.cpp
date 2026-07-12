@@ -289,10 +289,7 @@ void WardenWin::RequestChecks()
     _serverTicks = GameTime::GetGameTimeMS();
     _currentChecks.clear();
 
-    // Build check request
-    ByteBuffer buff;
-    buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
-
+    // Populate normal checks
     for (WardenCheckCategory category : EnumUtils::Iterate<WardenCheckCategory>())
     {
         if (IsWardenCategoryInWorldOnly(category) && !_session->GetPlayer())
@@ -301,24 +298,18 @@ void WardenWin::RequestChecks()
         auto& [checks, checksIt] = _checks[category];
         for (uint32 i = 0, n = sWorld->getIntConfig(GetWardenCategoryCountConfig(category)); i < n; ++i)
         {
-            if (category == LUA_CHECK_CATEGORY && !_payloadMgr.QueuedPayloads.empty())
-            {
-                uint16 payloadId = _payloadMgr.QueuedPayloads.front();
-                TC_LOG_DEBUG("warden", "Adding custom warden payload '{}' to _currentChecks.", payloadId);
-                _payloadMgr.QueuedPayloads.pop_front();
-                _currentChecks.push_back(payloadId);
-                continue;
-            }
-
             if (checksIt == checks.end()) // all checks were already sent, list will be re-filled on next Update() run
                 break;
             _currentChecks.push_back(*(checksIt++));
         }
     }
 
+    // Shuffle normal checks
     Trinity::Containers::RandomShuffle(_currentChecks);
 
     uint16 expectedSize = 4;
+
+    // Erase normal checks that don't fit in the packet
     Trinity::Containers::EraseIf(_currentChecks,
         [this, &expectedSize](uint16 id)
         {
@@ -335,6 +326,33 @@ void WardenWin::RequestChecks()
             return false;
         }
     );
+
+    // Append custom payloads that fit, regardless of CONFIG_WARDEN_NUM_LUA_CHECKS configuration value
+    while (!_payloadMgr.QueuedPayloads.empty())
+    {
+        uint16 payloadId = _payloadMgr.QueuedPayloads.front();
+        WardenCheck const* check = GetWardenCheck(payloadId);
+        if (!check)
+        {
+            _payloadMgr.QueuedPayloads.pop_front();
+            continue;
+        }
+
+        uint16 const thisSize = GetCheckPacketSize(check);
+        if ((expectedSize + thisSize) > 450)
+        {
+            break;
+        }
+
+        TC_LOG_DEBUG("warden", "Adding custom warden payload '{}' to _currentChecks.", payloadId);
+        _payloadMgr.QueuedPayloads.pop_front();
+        _currentChecks.push_back(payloadId);
+        expectedSize += thisSize;
+    }
+
+    // Build check request
+    ByteBuffer buff;
+    buff << uint8(WARDEN_SMSG_CHEAT_CHECKS_REQUEST);
 
     for (uint16 const id : _currentChecks)
     {
