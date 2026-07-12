@@ -99,6 +99,7 @@ class TC_GAME_API Warden
         virtual void ForceChecks() = 0;
 
         WardenPayloadMgr* GetPayloadMgr();
+        bool IsInitialized() const { return _initialized; }
 
     protected:
         void DecryptData(uint8* buffer, uint32 length);

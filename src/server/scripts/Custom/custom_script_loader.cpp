@@ -86,6 +86,7 @@ void AddSC_ItemUse_item_custom();
 // void Add${NameOfDirectory}Scripts()
 
 void AddSC_AutoBalance();
+void AddBreakingNewsScripts();
 
 void AddCustomScripts()
 {
@@ -130,6 +131,7 @@ void AddCustomScripts()
     AddSC_battle_royal_rewards();
     // VAS AutoBalance
     AddSC_AutoBalance();
+    AddBreakingNewsScripts();
     AddSC_dk_trial_of_the_champion();
     AddSC_dk_boss_grand_champions();
     AddSC_dk_boss_black_knight();
