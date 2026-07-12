@@ -3284,8 +3284,16 @@ namespace
         if (!sConfigMgr->GetBoolDefault("ArenaReplay.Enable", true))
             return;
 
-        if (!bg->isRated() && !sConfigMgr->GetBoolDefault("ArenaReplay.SaveUnratedArenas", true))
-            return;
+        if (bg->isArena())
+        {
+            if (!bg->isRated() && !sConfigMgr->GetBoolDefault("ArenaReplay.SaveUnratedArenas", true))
+                return;
+        }
+        else
+        {
+            if (!sConfigMgr->GetBoolDefault("ArenaReplay.SaveBattlegrounds", true))
+                return;
+        }
 
         auto recordItr = Records.find(bg->GetInstanceID());
         if (recordItr == Records.end())
@@ -3475,7 +3483,7 @@ public:
         if (!bg || bg->IsReplay())
             return;
 
-        if (!bg->isArena())
+        if (!bg->isArena() && !sConfigMgr->GetBoolDefault("ArenaReplay.SaveBattlegrounds", true))
             return;
 
         if (!ShouldRecordPacket(bg, packet))
@@ -3721,7 +3729,7 @@ public:
 
     void OnBattlegroundEnd(Battleground* bg, uint32 winner) override
     {
-        if (!bg || !bg->isArena())
+        if (!bg)
             return;
 
         if (!bg->IsReplay())
