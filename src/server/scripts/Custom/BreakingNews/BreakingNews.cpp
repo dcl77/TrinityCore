@@ -67,6 +67,7 @@ void LoadBreakingNewsLocked()
     }
 
     bn_Formatted = Trinity::StringFormat(_midPayloadFmt, bn_Title, bn_Body);
+    TC_LOG_INFO("server", "Breaking News loaded successfully. Title: '{}', Body size: {} bytes.", bn_Title, bn_Body.size());
 }
 
 std::vector<std::string> BreakingNewsServerScript::GetChunks(std::string s, uint8_t chunkSize)
@@ -89,31 +90,33 @@ void BreakingNewsServerScript::SendChunkedPayload(Warden* warden, WardenPayloadM
         payloadMgr->RegisterPayload(_prePayload, _prePayloadId);
 
     payloadMgr->QueuePayload(_prePayloadId);
-    warden->ForceChecks();
 
     if (verbose)
-        TC_LOG_INFO("server", "Sent pre-payload '{}'.", _prePayload);
+        TC_LOG_INFO("server", "Queued pre-payload '{}'.", _prePayload);
 
+    uint16 currentPayloadId = _tmpPayloadId;
     for (auto const& chunk : chunks)
     {
         auto smallPayload = "wlbuf = wlbuf .. [[" + chunk + "]];";
 
-        payloadMgr->RegisterPayload(smallPayload, _tmpPayloadId, true);
-        payloadMgr->QueuePayload(_tmpPayloadId);
-        warden->ForceChecks();
+        payloadMgr->RegisterPayload(smallPayload, currentPayloadId, true);
+        payloadMgr->QueuePayload(currentPayloadId);
 
         if (verbose)
-            TC_LOG_INFO("server", "Sent mid-payload '{}'.", smallPayload);
+            TC_LOG_INFO("server", "Queued mid-payload ID {}: '{}'.", currentPayloadId, smallPayload);
+
+        currentPayloadId++;
     }
 
     if (!payloadMgr->GetPayloadById(_postPayloadId))
         payloadMgr->RegisterPayload(_postPayload, _postPayloadId);
 
     payloadMgr->QueuePayload(_postPayloadId);
-    warden->ForceChecks();
 
     if (verbose)
-        TC_LOG_INFO("server", "Sent post-payload '{}'.", _postPayload);
+        TC_LOG_INFO("server", "Queued post-payload '{}'.", _postPayload);
+
+    warden->ForceChecks();
 }
 
 void BreakingNewsServerScript::OnPacketSend(WorldSession* session, WorldPacket& packet)
