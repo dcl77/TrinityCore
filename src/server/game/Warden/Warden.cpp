@@ -30,7 +30,8 @@
 #include <charconv>
 
 Warden::Warden() : _session(nullptr), _checkTimer(10 * IN_MILLISECONDS), _clientResponseTimer(0),
-                   _dataSent(false), _initialized(false), _interrupted(false), _checkInProgress(false), _interruptCounter(0)
+                   _dataSent(false), _initialized(false), _interrupted(false), _checkInProgress(false), _interruptCounter(0),
+                   _forceChecksPending(false)
 {
 }
 

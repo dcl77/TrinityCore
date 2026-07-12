@@ -137,6 +137,7 @@ class TC_GAME_API Warden
         bool _interrupted;
         bool _checkInProgress;
         uint32 _interruptCounter = 0;
+        bool _forceChecksPending;
 };
 
 #endif

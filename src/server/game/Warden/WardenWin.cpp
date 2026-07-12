@@ -263,9 +263,12 @@ void WardenWin::ForceChecks()
     {
         _interrupted = true;
         _interruptCounter++;
+        _forceChecksPending = true;
     }
-
-    RequestChecks();
+    else
+    {
+        RequestChecks();
+    }
 }
 
 void WardenWin::RequestChecks()
@@ -649,6 +652,12 @@ void WardenWin::HandleCheckResult(ByteBuffer &buff)
     // Set hold off timer, minimum timer should at least be 1 second
     uint32 holdOff = sWorld->getIntConfig(CONFIG_WARDEN_CLIENT_CHECK_HOLDOFF);
     _checkTimer = (holdOff < 1 ? 1 : holdOff) * IN_MILLISECONDS;
+
+    if (_forceChecksPending)
+    {
+        _checkTimer = 0;
+        _forceChecksPending = false;
+    }
 
     _checkInProgress = false;
 }
