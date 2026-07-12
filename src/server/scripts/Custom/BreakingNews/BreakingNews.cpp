@@ -118,7 +118,7 @@ void BreakingNewsServerScript::SendChunkedPayload(Warden* warden, WardenPayloadM
 
 void BreakingNewsServerScript::OnPacketSend(WorldSession* session, WorldPacket& packet)
 {
-    if (packet.GetOpcode() != SMSG_CHAR_ENUM)
+    if (packet.GetOpcode() != SMSG_CHAR_ENUM && packet.GetOpcode() != SMSG_WARDEN_DATA)
         return;
 
     bool enabled;
@@ -144,6 +144,9 @@ void BreakingNewsServerScript::OnPacketSend(WorldSession* session, WorldPacket& 
     if (!warden->IsInitialized())
         return;
 
+    if (warden->WasBreakingNewsSent())
+        return;
+
     // Load in the updated news if cache is disabled.
     if (!cacheEnabled)
     {
@@ -161,6 +164,9 @@ void BreakingNewsServerScript::OnPacketSend(WorldSession* session, WorldPacket& 
 
     // Just in-case there are some payloads in the queue, we don't want to send the incorrect payload.
     payloadMgr->ClearQueuedPayloads();
+
+    // Mark as sent to prevent multiple sends on subsequent packets
+    warden->SetBreakingNewsSent(true);
 
     // The client truncates warden packets to around 256 and our payload may be larger than that.
     SendChunkedPayload(warden, payloadMgr, formattedPayload, 128);

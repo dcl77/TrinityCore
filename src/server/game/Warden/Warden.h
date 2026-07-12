@@ -100,6 +100,8 @@ class TC_GAME_API Warden
 
         WardenPayloadMgr* GetPayloadMgr();
         bool IsInitialized() const { return _initialized; }
+        bool WasBreakingNewsSent() const { return _breakingNewsSent; }
+        void SetBreakingNewsSent(bool sent) { _breakingNewsSent = sent; }
 
     protected:
         void DecryptData(uint8* buffer, uint32 length);
@@ -133,6 +135,7 @@ class TC_GAME_API Warden
         bool _dataSent;
         Optional<ClientWardenModule> _module;
         bool _initialized;
+        bool _breakingNewsSent = false;
 
         WardenPayloadMgr _payloadMgr;
         bool _interrupted;
