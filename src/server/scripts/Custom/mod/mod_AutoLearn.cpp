@@ -24,7 +24,8 @@ uint8 OnLevelSpellMask = 0;
 uint8 OnSkillSpellMask = 0;
 uint8 OnLoginSpellMask = 0;
 uint8 OnCreateSpellMask = 0;
-std::vector<LearnSpellForClassInfo> LearnSpellForClass;
+std::unordered_multimap<uint8, LearnSpellForClassInfo> LearnSpellByLevel;
+std::vector<LearnSpellForClassInfo> LearnSpellBySkill;
 
 class Mod_AutoLearn_WorldScript : public WorldScript
 {
@@ -79,7 +80,8 @@ public:
 
     void LoadDataFromDataBase(void)
     {
-        LearnSpellForClass.clear();
+        LearnSpellByLevel.clear();
+        LearnSpellBySkill.clear();
         uint8 spellMask = OnLevelSpellMask | OnSkillSpellMask;
 
         if (spellMask == 0)
@@ -87,8 +89,6 @@ public:
 
         TC_LOG_INFO("server.loading", "Loading AutoLearn...");
         uint32 oldMSTime = getMSTime();
-
-       // QueryResult result = ZynDatabase.PQuery("SELECT SpellId, SpellMask, RequiredClassMask, RequiredRaceMask, RequiredLevel, RequiredSpellId, RequiredSkillId, RequiredSkillValue FROM `world_autolearn`");
 
         ZynDatabasePreparedStatement* stmt = ZynDatabase.GetPreparedStatement(ZynDatabase2);
         PreparedQueryResult result = ZynDatabase.Query(stmt);
@@ -140,11 +140,14 @@ public:
                 continue;
             }
 
-            LearnSpellForClass.push_back(Spell);
+            if (Spell.RequiredSkillId != 0)
+                LearnSpellBySkill.push_back(Spell);
+            else
+                LearnSpellByLevel.emplace(Spell.RequiredLevel, Spell);
+
             ++count;
         }
         while (result->NextRow());
-             //++count;
         TC_LOG_INFO("server.loading", ">> Loaded {} spells for AutoLearn in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
     }
 };
@@ -205,19 +208,39 @@ public:
         uint32  PlayerRaceMask  = Player->GetRaceMask();
         uint8   PlayerLevel     = Player->GetLevel();
 
-        for (uint16 i = 0; i < LearnSpellForClass.size(); ++i)
+        if (SkillId != 0)
         {
-            LearnSpellForClassInfo &Spell = LearnSpellForClass[i];
-            if (!(Spell.SpellMask & SpellMask)) continue;
-            if (Spell.RequiredClassMask != 0 && !(Spell.RequiredClassMask & PlayerClassMask)) continue;
-            if (Spell.RequiredRaceMask != 0 && !(Spell.RequiredRaceMask & PlayerRaceMask)) continue;
-            if (Spell.RequiredLevel > PlayerLevel) continue;
-            if (Spell.RequiredSkillId != SkillId) continue;
-            if (Spell.RequiredSkillValue > SkillValue) continue;
-            if (Player->HasSpell(Spell.SpellId)) continue;
-            if (Spell.RequiredSpellId != 0 && !Player->HasSpell(Spell.RequiredSpellId)) continue;
+            for (auto const& Spell : LearnSpellBySkill)
+            {
+                if (!(Spell.SpellMask & SpellMask)) continue;
+                if (Spell.RequiredSkillId != SkillId) continue;
+                if (Spell.RequiredSkillValue > SkillValue) continue;
+                if (Spell.RequiredClassMask != 0 && !(Spell.RequiredClassMask & PlayerClassMask)) continue;
+                if (Spell.RequiredRaceMask != 0 && !(Spell.RequiredRaceMask & PlayerRaceMask)) continue;
+                if (Spell.RequiredLevel > PlayerLevel) continue;
+                if (Player->HasSpell(Spell.SpellId)) continue;
+                if (Spell.RequiredSpellId != 0 && !Player->HasSpell(Spell.RequiredSpellId)) continue;
 
-            Player->LearnSpell(Spell.SpellId, false);
+                Player->LearnSpell(Spell.SpellId, false);
+            }
+        }
+        else
+        {
+            for (uint8 level = 1; level <= PlayerLevel; ++level)
+            {
+                auto range = LearnSpellByLevel.equal_range(level);
+                for (auto it = range.first; it != range.second; ++it)
+                {
+                    auto const& Spell = it->second;
+                    if (!(Spell.SpellMask & SpellMask)) continue;
+                    if (Spell.RequiredClassMask != 0 && !(Spell.RequiredClassMask & PlayerClassMask)) continue;
+                    if (Spell.RequiredRaceMask != 0 && !(Spell.RequiredRaceMask & PlayerRaceMask)) continue;
+                    if (Player->HasSpell(Spell.SpellId)) continue;
+                    if (Spell.RequiredSpellId != 0 && !Player->HasSpell(Spell.RequiredSpellId)) continue;
+
+                    Player->LearnSpell(Spell.SpellId, false);
+                }
+            }
         }
     }
 

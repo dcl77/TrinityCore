@@ -121,44 +121,16 @@ namespace nsNpcTel
     // Class page for current player
     class TC_GAME_API Page
     {
-      protected:
-
-        // Class instance for current player
-      class TC_GAME_API Instance
-        {
-          public:
-
-            Instance(Player * const player, const uint32 &PageId = 0)
-                : m_player(player), m_PageId(PageId) {}
-
-            Instance & operator =  (const uint32 &id);
-            Instance & operator ++ (void);
-            Instance   operator ++ (int32);
-            Instance & operator -- (void);
-            Instance   operator -- (int32);
-
-            uint32   GetPageId(void) const { return m_PageId; }
-            Player * GetPlayer(void) const { return m_player; }
-
-          private:
-
-            Player *m_player;
-            uint32  m_PageId;
-        };
-
       public:
 
-        typedef std::vector<Instance> VInst;
-        typedef VInst::size_type      VInst_t;
+        Page(void) { m_PlayerPages.clear(); }
 
-        Page(void) { m_TabInstance.clear(); }
-
-        Instance &   operator () (Player * const player);
+        uint32 & operator () (Player * const player);
         uint32 operator [] (Player * const player) const;
 
       private:
 
-        VInst m_TabInstance;
+        std::unordered_map<ObjectGuid, uint32> m_PlayerPages;
     };
 
     typedef std::vector <CatDest> VCatDest;

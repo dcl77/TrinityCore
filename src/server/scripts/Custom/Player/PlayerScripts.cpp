@@ -86,27 +86,9 @@ class buff_zones : public PlayerScript
 public:
     buff_zones() : PlayerScript("buff_zone") {}
 
-    void OnUpdateZone(Player* player, uint32 newZone, uint32 /*newArea*/) override
+    static void LoadZoneBuffs()
     {
-        LoadZoneBuffs();
-
-        auto it = zoneBuffs.find(newZone);
-        if (it != zoneBuffs.end())
-        {
-            uint32 buffId = it->second;
-            player->AddAura(buffId, player);
-        }
-        else
-        {
-            for (const auto& pair : zoneBuffs)
-            {
-                player->RemoveAurasDueToSpell(pair.second);
-            }
-        }
-    }
-
-    void LoadZoneBuffs()
-    {
+        _zoneBuffs.clear();
         QueryResult result = ZynDatabase.PQuery("SELECT zone_id, buff_id FROM zone_buffs");
         if (result)
         {
@@ -115,13 +97,43 @@ public:
                 Field* fields = result->Fetch();
                 uint32 zoneId = fields[0].GetUInt32();
                 uint32 buffId = fields[1].GetUInt32();
-                zoneBuffs[zoneId] = buffId;
+                _zoneBuffs[zoneId] = buffId;
             } while (result->NextRow());
         }
     }
 
+    void OnUpdateZone(Player* player, uint32 newZone, uint32 /*newArea*/) override
+    {
+        auto it = _zoneBuffs.find(newZone);
+        if (it != _zoneBuffs.end())
+        {
+            uint32 buffId = it->second;
+            player->AddAura(buffId, player);
+        }
+        else
+        {
+            for (const auto& pair : _zoneBuffs)
+            {
+                player->RemoveAurasDueToSpell(pair.second);
+            }
+        }
+    }
+
 private:
-    std::map<uint32, uint32> zoneBuffs;
+    static std::map<uint32, uint32> _zoneBuffs;
+};
+
+std::map<uint32, uint32> buff_zones::_zoneBuffs;
+
+class buff_zones_WorldScript : public WorldScript
+{
+public:
+    buff_zones_WorldScript() : WorldScript("buff_zones_WorldScript") {}
+
+    void OnConfigLoad(bool /*reload*/) override
+    {
+        buff_zones::LoadZoneBuffs();
+    }
 };
 
 //class ItemInfectionSystem : public PlayerScript
@@ -148,6 +160,7 @@ private:
 void AddSC_ZynPlayerScripts()
 {
     new buff_zones();
+    new buff_zones_WorldScript();
     new item_lvlup();
     new lfg_solo_announce();
     new ZynPlayerScripts();

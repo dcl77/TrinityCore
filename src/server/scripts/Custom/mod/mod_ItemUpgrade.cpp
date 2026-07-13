@@ -25,7 +25,8 @@ int ItemUpgradeTextNoEffect = 0;
 int ItemUpgradeTextEffectNow = 0;
 int ItemUpgradeTextEffectRemove = 0;
 bool ItemUpgradeEnable = false;
-std::vector<ItemUpgradeTemplate> ItemUpgradeInfo;
+std::unordered_multimap<uint32, ItemUpgradeTemplate> ItemUpgradeByPrevEnchant;
+std::unordered_map<uint32, ItemUpgradeTemplate> ItemUpgradeByEnchant;
 
 class Mod_ItemUpgrade_WorldScript : public WorldScript
 {
@@ -34,12 +35,12 @@ class Mod_ItemUpgrade_WorldScript : public WorldScript
 
     void LoadDataFromDataBase()
     {
-        ItemUpgradeInfo.clear();
+        ItemUpgradeByPrevEnchant.clear();
+        ItemUpgradeByEnchant.clear();
 
         TC_LOG_INFO("misc", "Loading ItemUpgrade...");
         uint32 oldMSTime = getMSTime();
 
-        //QueryResult result = ZynDatabase.PQuery("SELECT `enchant_id`, `prev_enchant_id`, `golds` FROM `world_item_upgrade`");
         ZynDatabasePreparedStatement* stmt = ZynDatabase.GetPreparedStatement(ZynDatabase1);
         PreparedQueryResult result = ZynDatabase.Query(stmt);
 
@@ -70,11 +71,8 @@ class Mod_ItemUpgrade_WorldScript : public WorldScript
                 continue;
             }
 
-          //  for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
-            //    if (strlen(enchantEntry->Name[i]))
-                    ItemUpgradeTemp.description = fields[2].GetCString();//*/ = enchantEntry->Name[i];
-
-            ItemUpgradeInfo.push_back(ItemUpgradeTemp);
+            ItemUpgradeByPrevEnchant.emplace(ItemUpgradeTemp.prevEnchantId, ItemUpgradeTemp);
+            ItemUpgradeByEnchant.emplace(ItemUpgradeTemp.enchantId, ItemUpgradeTemp);
             ++count;
         }
         while (result->NextRow());
@@ -189,24 +187,22 @@ class go_item_upgrade : public GameObjectScript
                 uint32 enchantId = item->GetEnchantmentId(EnchantmentSlot(i));
                 if (enchantId != 0)
                 {
-                    bool isExists = false;
-
-                    for (uint32 j = 0; j < ItemUpgradeInfo.size(); ++j)
+                    auto it = ItemUpgradeByEnchant.find(enchantId);
+                    if (it != ItemUpgradeByEnchant.end())
                     {
-                        if (ItemUpgradeInfo[j].enchantId != enchantId)
-                            continue;
-
-                        oldEffect = ItemUpgradeInfo[j].description;
-                        isExists = true;
+                        oldEffect = it->second.description;
                     }
-
-                    if (!isExists) {
+                    else
+                    {
                         SpellItemEnchantmentEntry const* enchantEntry = sDBCMgr->GetSpellItemEnchantmentEntry(enchantId);
 
                         if (enchantEntry)
-                            for (uint8 i = 0; i < TOTAL_LOCALES; ++i)
-                                if (strlen(enchantEntry->Name[i]))
-                                    oldEffect = enchantEntry->Name[i];
+                            for (uint8 loc = 0; loc < TOTAL_LOCALES; ++loc)
+                                if (strlen(enchantEntry->Name[loc]))
+                                {
+                                    oldEffect = enchantEntry->Name[loc];
+                                    break;
+                                }
                     }
                 }
 
@@ -227,12 +223,11 @@ class go_item_upgrade : public GameObjectScript
             if (currentEnchantId != 0)
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityStringForDBCLocale(ItemUpgradeTextEffectRemove), senderValue(itemSlot, itemEnchantSlot), GOSSIP_ACTION_INFO_DEF + 1, sObjectMgr->GetTrinityStringForDBCLocale(ItemUpgradeTextAreYouSure), 100 * GOLD, 0);
 
-            for (uint32 i = 0; i < ItemUpgradeInfo.size(); ++i)
+            auto range = ItemUpgradeByPrevEnchant.equal_range(currentEnchantId);
+            for (auto it = range.first; it != range.second; ++it)
             {
-                if (ItemUpgradeInfo[i].prevEnchantId != currentEnchantId)
-                    continue;
-
-                AddGossipItemFor(player, GOSSIP_ICON_CHAT, ItemUpgradeInfo[i].description.c_str(), senderValue(itemSlot, itemEnchantSlot), GOSSIP_ACTION_INFO_DEF + ItemUpgradeInfo[i].enchantId, ItemUpgradeInfo[i].description.c_str(), ItemUpgradeInfo[i].golds, 0);
+                auto const& Upgrade = it->second;
+                AddGossipItemFor(player, GOSSIP_ICON_CHAT, Upgrade.description.c_str(), senderValue(itemSlot, itemEnchantSlot), GOSSIP_ACTION_INFO_DEF + Upgrade.enchantId, Upgrade.description.c_str(), Upgrade.golds, 0);
             }
 
             SendGossipMenuFor(player, player->GetGossipTextId(me), me->GetGUID());
@@ -255,15 +250,14 @@ class go_item_upgrade : public GameObjectScript
             player->ApplyEnchantment(item, EnchantmentSlot(itemEnchantSlot), false);
             item->ClearEnchantment(EnchantmentSlot(itemEnchantSlot));
         } else {
-            for (uint32 i = 0; i < ItemUpgradeInfo.size(); ++i)
+            auto range = ItemUpgradeByPrevEnchant.equal_range(currentEnchantId);
+            for (auto it = range.first; it != range.second; ++it)
             {
-                if (ItemUpgradeInfo[i].prevEnchantId != currentEnchantId)
+                auto const& Upgrade = it->second;
+                if (Upgrade.enchantId != enchantId)
                     continue;
 
-                if (ItemUpgradeInfo[i].enchantId != enchantId)
-                    continue;
-
-                golds = ItemUpgradeInfo[i].golds;
+                golds = Upgrade.golds;
 
                 if (!player->HasEnoughMoney(golds))
                 {
@@ -272,8 +266,9 @@ class go_item_upgrade : public GameObjectScript
                     return false;
                 }
                 player->ApplyEnchantment(item, EnchantmentSlot(itemEnchantSlot), false);
-                item->SetEnchantment(EnchantmentSlot(itemEnchantSlot), ItemUpgradeInfo[i].enchantId, ItemUpgradeInfo[i].duration, ItemUpgradeInfo[i].charges);
+                item->SetEnchantment(EnchantmentSlot(itemEnchantSlot), Upgrade.enchantId, Upgrade.duration, Upgrade.charges);
                 player->ApplyEnchantment(item, EnchantmentSlot(itemEnchantSlot), true);
+                break;
             }
         }
 
