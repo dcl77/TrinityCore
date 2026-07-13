@@ -31,6 +31,11 @@
 #include "WorldSession.h"
 #include "ScriptedCreature.h"
 #include "ScriptedGossip.h"
+#include <mutex>
+
+static std::unordered_map<ObjectGuid, uint32> sPlayerSurvivalTimers;
+static std::unordered_map<ObjectGuid, uint32> sPlayerTradeTimers;
+static std::mutex sHardcoreTimerMutex;
 
 class HardcoreModePlayerScript : public PlayerScript
 {
@@ -41,44 +46,45 @@ public:
     {
         if (IsHardcoreEnabled() && IsHardcorePlayer(player))
         {
-            ChatHandler(player->GetSession()).SendSysMessage("Вы играете в HARDCORE режиме! Смерть = удаление персонажа!");
-        if (HasExtraLife(player))
+            ChatHandler(player->GetSession()).SendSysMessage("You are playing in HARDCORE mode! Death = Character Deletion!");
+            if (HasExtraLife(player))
             {
                 ChatHandler(player->GetSession()).SendSysMessage(
-                    "|cff00ff00У вас есть дополнительная жизнь! При смерти вы воскреснете с 50% здоровья, но потеряете этот бонус.|r");
+                    "|cff00ff00You have an extra life! Upon death, you will resurrect with 50% health, but you will lose this bonus.|r");
             }
-			CheckMissingLevelRewards(player);
-        //CheckTimeRewards(player); // Проверяем награды за время
-            // Добавляем визуальные эффекты
-          //  player->CastSpell(player, HARDCORE_AURA_SPELL, true);
+
+            CheckMissingLevelRewards(player);
+            CheckTimeRewards(player);
+
+            // Add visual effects (Hardcore Aura)
+            player->CastSpell(player, 61573, true);
+        }
+    }
+
+    void OnLogout(Player* player) override
+    {
+        std::lock_guard<std::mutex> lock(sHardcoreTimerMutex);
+        sPlayerSurvivalTimers.erase(player->GetGUID());
+        sPlayerTradeTimers.erase(player->GetGUID());
+    }
+
+    void OnUpdate(Player* player, uint32 diff) override
+    {
+        if (!IsHardcoreEnabled() || !IsHardcorePlayer(player))
+        {
+            return;
         }
 
-        /* if (Group* group = player->GetGroup())
-         {
-             group->RemoveMember(player->GetGUID());
-             ChatHandler(player->GetSession()).SendSysMessage(
-                 "|cffff0000[HARDCORE] Вы автоматически покинули группу.|r");
-         }*/
+        std::lock_guard<std::mutex> lock(sHardcoreTimerMutex);
+        sPlayerSurvivalTimers[player->GetGUID()] += diff;
+
+        // Check survival time rewards every 60 seconds
+        if (sPlayerSurvivalTimers[player->GetGUID()] >= 60000)
+        {
+            CheckTimeRewards(player);
+            sPlayerSurvivalTimers[player->GetGUID()] = 0;
+        }
     }
-
-void OnUpdate(Player* player, uint32 diff) override
-{
-    if (!IsHardcorePlayer(player))
-        return;
-
-    static std::unordered_map<uint32, uint32> playerTimers;
-    uint32 playerGuid = player->GetGUID().GetCounter();
-
-    playerTimers[playerGuid] += diff;
-
-    // Обновляем время каждые 60 секунд
-    if (playerTimers[playerGuid] >= 1000)
-    {
-       // UpdatePlaytime(player);
-       // CheckTimeRewards(player); // Раскомментируем эту строку
-        playerTimers[playerGuid] = 0;
-    }
-}
 
 uint32 GetPlayerTotalTime(Player* player)
 {
@@ -185,23 +191,23 @@ uint32 GetPlayerTotalTime(Player* player)
         }
 
         if (experience)
-            {
-                player->GiveXP(experience, nullptr, false);
-            }
-			
-        // Сохраняем информацию о полученной награде
+        {
+            player->GiveXP(experience, nullptr, false);
+        }
+
+        // Save survival reward claim information
         CharacterDatabase.PExecute(
             "INSERT INTO hardcore_rewards_claimed (guid, reward_id, claimed_time, playtime_when_claimed) "
             "VALUES ({}, {}, {}, {})",
             player->GetGUID().GetCounter(), rewardId, GameTime::GetGameTime(), GetPlayerTotalTime(player));
 
-        // Уведомляем игрока
+        // Notify player
         ChatHandler(player->GetSession()).PSendSysMessage(
-            "|cff00ff00[HARDCORE] Вы получили награду за время выживания: %s|r", name.c_str());
+            "|cff00ff00[HARDCORE] You have received a survival time reward: %s|r", name.c_str());
 
-        // Объявление всему серверу
-        std::string announcement = "|cff00ff00Игрок " + player->GetName() +
-            " получил hardcore награду: " + name + "!|r";
+        // Global announcement
+        std::string announcement = "|cff00ff00Player " + player->GetName() +
+            " received hardcore reward: " + name + "!|r";
         sWorld->SendServerMessage(SERVER_MSG_STRING, announcement.c_str());
     }
 
@@ -215,14 +221,14 @@ uint32 GetPlayerTotalTime(Player* player)
             mailItem->SaveToDB(trans);
 
             MailSender sender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM);
-            MailDraft draft("Hardcore Time Reward", "Поздравляем! Вы получили награду: " + rewardName);
+            MailDraft draft("Hardcore Time Reward", "Congratulations! You have received a reward: " + rewardName);
             draft.AddItem(mailItem);
             draft.SendMailTo(trans, MailReceiver(player, player->GetGUID().GetCounter()), sender);
 
             CharacterDatabase.CommitTransaction(trans);
 
             ChatHandler(player->GetSession()).SendSysMessage(
-                "|cff00ff00[HARDCORE] Ваш инвентарь заполнен. Награда отправлена по почте.|r");
+                "|cff00ff00[HARDCORE] Your inventory is full. Reward sent by mail.|r");
         }
     }
 
@@ -254,31 +260,40 @@ void CheckMissingLevelRewards(Player* player)
 
 void OnLevelChanged(Player* player, uint8 oldLevel) override
 {
-    if (!IsHardcorePlayer(player))
+    if (!IsHardcoreEnabled() || !IsHardcorePlayer(player))
         return;
 
     uint8 newLevel = player->GetLevel();
 
-    // Проверяем, достиг ли игрок нового уровня (не при понижении уровня)
+    // Check if player reached a new level
     if (newLevel > oldLevel)
     {
-        // Выдаем награду за достижение уровня
+        // Give reward for level achievement
         GiveHardcoreLevelReward(player, newLevel);
 
-        // Дополнительное уведомление
+        // Notify player
         ChatHandler(player->GetSession()).PSendSysMessage(
-            "|cff00ff00[HARDCORE] Поздравляем с достижением уровня %u! Вы получили специальную награду.|r",
+            "|cff00ff00[HARDCORE] Congratulations on reaching level %u! You received a special reward.|r",
             newLevel);
+
+        // Milestone level announcements
+        if (newLevel == 60 || newLevel == 70 || newLevel == 80)
+        {
+            std::string announcement = "|cffff0000[HARDCORE]|r Player |cff00ff00" + player->GetName() +
+                "|r reached level " + std::to_string(newLevel) + " in Hardcore mode! Congratulations!";
+            sWorld->SendServerMessage(SERVER_MSG_STRING, announcement.c_str());
+        }
     }
 }
 
 void GiveHardcoreLevelReward(Player* player, uint8 level)
-{
-    // Проверяем, не получил ли игрок уже эту награду
-    if (HasReceivedLevelReward(player, level))
-        return;
+    {
+        if (HasReceivedLevelReward(player, level))
+        {
+            return;
+        }
 
-    // Получаем информацию о награде из БД
+        // Fetch reward info from database
     QueryResult result = CharacterDatabase.PQuery(
         "SELECT item_id, item_count, money, title_id, achievement_id, spell_id "
         "FROM hardcore_level_rewards WHERE level = {}", level);
@@ -336,15 +351,15 @@ void GiveHardcoreLevelReward(Player* player, uint8 level)
             Item* mailItem = Item::CreateItem(itemId, itemCount, player);
             if (mailItem)
             {
-                mailItem->SaveToDB(trans); // Сохраняем предмет в БД перед отправкой
+                mailItem->SaveToDB(trans);
 
                 MailSender sender(MAIL_NORMAL, player->GetGUID().GetCounter());
                 MailDraft draft("Hardcore Level Reward", "Congratulations on reaching level " + std::to_string(level) + "!");
-                draft.AddItem(mailItem); // Теперь передаем указатель на созданный предмет
+                draft.AddItem(mailItem);
                 draft.SendMailTo(trans, MailReceiver(player, guid), MailSender(MAIL_NORMAL, 0, MAIL_STATIONERY_GM));
 
                 ChatHandler(player->GetSession()).PSendSysMessage(
-                    "|cff00ff00[HARDCORE] Ваш инвентарь заполнен. Предмет награды отправлен вам по почте.|r");
+                    "|cff00ff00[HARDCORE] Your inventory is full. The reward has been sent to you by mail.|r");
             }
 
             //// Создаем предмет
@@ -458,7 +473,7 @@ void SaveReceivedLevelReward(Player* player, uint8 level)
     {
         if (IsHardcorePlayer(player))
         {
-            // Бонус опыта для hardcore игроков
+            // +50% XP bonus for hardcore players
             amount = uint32(amount * 1.5f);
         }
     }
@@ -498,30 +513,30 @@ private:
 
     void HandleHardcoreDeath(Player* player, Unit* killer)
     {
-        if (!IsHardcorePlayer(player))
+        if (!IsHardcoreEnabled() || !IsHardcorePlayer(player))
             return;
 
         if (HasExtraLife(player))
         {
-            // Воскрешаем игрока с 50% здоровья
+            // Resurrect player with 50% health
             player->ResurrectPlayer(0.5f);
             player->SetHealth(player->GetMaxHealth() * 0.5f);
 
-            // Убираем дополнительную жизнь
+            // Use extra life
             UseExtraLife(player);
 
-            // Уведомляем игрока
+            // Notify player
             ChatHandler(player->GetSession()).SendSysMessage(
-                "|cffff0000Вы использовали дополнительную жизнь! Теперь вы воскрешены, но больше не сможете использовать этот шанс.|r");
+                "|cffff0000You used an extra life! You are now resurrected, but you won't be able to use this chance again.|r");
 
-            // Логируем использование дополнительной жизни
+            // Log extra life usage
             LogHardcoreDeath(player, killer);
             return;
         }
 
         LogHardcoreDeath(player, killer);
-        std::string announcement = "Hardcore игрок " + player->GetName() +
-            " погиб! Персонаж будет удален.";
+        std::string announcement = "Hardcore player " + player->GetName() +
+            " has died! Character will be deleted.";
         sWorld->SendServerMessage(SERVER_MSG_STRING, announcement.c_str());
 
         DeleteHardcoreCharacter(player);
@@ -529,7 +544,7 @@ private:
         player->SetFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST);
 
         ChatHandler(player->GetSession()).SendSysMessage(
-            "|cffff0000Ваш hardcore персонаж погиб! Персонаж будет удален через 10 секунд.|r");
+            "|cffff0000Your hardcore character has died! The character will be deleted in 10 seconds.|r");
     }
 
     void LogHardcoreDeath(Player* player, Unit* killer)
@@ -556,17 +571,11 @@ private:
 
             uint32 guid = player->GetGUID().GetCounter();
 
-            // Сразу удаляем
-			if (sGameConfig->GetBoolConfig("config.hardcore.delcharacters"))
-{
-            Player::DeleteFromDB(ObjectGuid::Create<HighGuid::Player>(guid), 0, true, true);
-}
-            // Планируем удаление персонажа после отключения
-           // uint32 guid = player->GetGUID().GetCounter();
-           // sWorld->GetScheduler().Schedule(Milliseconds(5000), [guid](TaskContext /*context*/)
-             //   {
-               //     Player::DeleteFromDB(ObjectGuid::Create<HighGuid::Player>(guid), 0, true, true);
-              //  });
+            // Check if character deletion is enabled in custom config
+            if (sGameConfig->GetBoolConfig("config.hardcore.delcharacters"))
+            {
+                Player::DeleteFromDB(ObjectGuid::Create<HighGuid::Player>(guid), 0, true, true);
+            }
         }
     }
 };
@@ -576,21 +585,31 @@ class hardcore_trade_restrictions : public PlayerScript
 public:
     hardcore_trade_restrictions() : PlayerScript("hardcore_trade_restrictions") {}
 
-    // Проверяем при обновлении игрока
-    void OnUpdate(Player* player, uint32 /*diff*/) override
+    void OnUpdate(Player* player, uint32 diff) override
     {
-        // Проверяем активную торговлю каждые несколько секунд
-        //static uint32 lastCheck = 0;
-        //if (lastCheck++ % 100 != 0) // Проверяем не каждый тик
-        //    return;
+        if (!IsHardcoreEnabled() || !IsHardcorePlayer(player))
+            return;
 
-        if (IsHardcorePlayer(player) && player->GetTrader())
+        std::lock_guard<std::mutex> lock(sHardcoreTimerMutex);
+        sPlayerTradeTimers[player->GetGUID()] += diff;
+
+        if (sPlayerTradeTimers[player->GetGUID()] < 500)
+            return;
+
+        sPlayerTradeTimers[player->GetGUID()] = 0;
+
+        if (player->GetTrader())
         {
             CancelTrade(player);
         }
     }
 
 private:
+    bool IsHardcoreEnabled()
+    {
+        return sConfigMgr->GetBoolDefault("Hardcore.Enable", false);
+    }
+
     bool IsHardcorePlayer(Player* player)
     {
         return player->HasFlag(PLAYER_FLAGS, 0x10000000);
@@ -610,12 +629,61 @@ private:
             // Очищаем торговлю
             player->TradeCancel(false);
 
-            // Уведомляем игроков
+            // Notify players
             ChatHandler(player->GetSession()).SendSysMessage(
-                "|cffff0000[HARDCORE] Торговля отменена! Hardcore игроки не могут торговать.|r");
+                "|cffff0000[HARDCORE] Trade canceled! Hardcore players cannot trade.|r");
             ChatHandler(trader->GetSession()).SendSysMessage(
-                "|cffff0000Торговля отменена! Ваш партнер играет в hardcore режиме.|r");
+                "|cffff0000Trade canceled! Your partner is playing in hardcore mode.|r");
         }
+    }
+};
+
+class hardcore_group_restrictions : public GroupScript
+{
+public:
+    hardcore_group_restrictions() : GroupScript("hardcore_group_restrictions") {}
+
+    void OnAddMember(Group* group, ObjectGuid guid) override
+    {
+        if (!sConfigMgr->GetBoolDefault("Hardcore.Enable", false))
+            return;
+
+        Player* added = ObjectAccessor::FindPlayer(guid);
+        if (!added)
+            return;
+
+        bool addedIsHardcore = IsHardcorePlayer(added);
+
+        for (GroupReference* itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
+        {
+            Player* member = itr->GetSource();
+            if (!member || member == added)
+                continue;
+
+            bool memberIsHardcore = IsHardcorePlayer(member);
+
+            if (addedIsHardcore != memberIsHardcore)
+            {
+                group->RemoveMember(added->GetGUID());
+                ChatHandler(added->GetSession()).SendSysMessage(
+                    "|cffff0000[HARDCORE] You cannot be in a group with " +
+                    std::string(addedIsHardcore ? "regular" : "Hardcore") + " players!|r");
+
+                if (Player* leader = ObjectAccessor::FindPlayer(group->GetLeaderGUID()))
+                {
+                    ChatHandler(leader->GetSession()).PSendSysMessage(
+                        "|cffff0000[HARDCORE] Player %s cannot be added to the group due to Hardcore restrictions.|r",
+                        added->GetName().c_str());
+                }
+                return;
+            }
+        }
+    }
+
+private:
+    bool IsHardcorePlayer(Player* player)
+    {
+        return player->HasFlag(PLAYER_FLAGS, 0x10000000);
     }
 };
 
@@ -707,22 +775,21 @@ public:
         if (!IsHardcorePlayer(player))
         {
             AddGossipItemFor(player, GOSSIP_ICON_CHAT,
-                "Извините, эти награды только для hardcore игроков!",
+                "Sorry, these rewards are for hardcore players only!",
                 GOSSIP_SENDER_MAIN, 1);
             SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
             return true;
         }
 
-        AddGossipItemFor(player, GOSSIP_ICON_VENDOR, "Показать доступные награды", GOSSIP_SENDER_MAIN, 1);
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Моя статистика", GOSSIP_SENDER_MAIN, 2);
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Получить награды", GOSSIP_SENDER_MAIN, 3);
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "История наград", GOSSIP_SENDER_MAIN, 4);
+        AddGossipItemFor(player, GOSSIP_ICON_VENDOR, "Show available rewards", GOSSIP_SENDER_MAIN, 1);
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "My statistics", GOSSIP_SENDER_MAIN, 2);
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Claim rewards", GOSSIP_SENDER_MAIN, 3);
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Reward history", GOSSIP_SENDER_MAIN, 4);
 
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
         return true;
     }
 
-    //bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action) override
     bool OnGossipSelect(Player* player, uint32 /*menu_id*/, uint32 gossipListId) override
     {
         uint32 sender = player->PlayerTalkClass->GetGossipOptionSender(gossipListId);
@@ -777,7 +844,7 @@ private:
 
         if (!rewards)
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Награды не найдены", GOSSIP_SENDER_MAIN, 0);
+            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "No rewards found", GOSSIP_SENDER_MAIN, 0);
         }
         else
         {
@@ -787,24 +854,24 @@ private:
                 uint32 rewardId = fields[0].GetUInt32();
                 uint32 requiredTime = fields[1].GetUInt32();
                 std::string name = fields[2].GetString();
-                std::string description = fields[3].GetString();
+                [[maybe_unused]] std::string description = fields[3].GetString();
 
                 uint32 hours = requiredTime / 3600;
                 uint32 minutes = (requiredTime % 3600) / 60;
 
-                std::string status = totalTime >= requiredTime ? "[Доступно]" : "[Недоступно]";
+                std::string status = totalTime >= requiredTime ? "[Available]" : "[Locked]";
                 bool claimed = HasClaimedReward(player, rewardId);
-                if (claimed) status = "[Получено]";
+                if (claimed) status = "[Claimed]";
 
                 std::string gossipText = status + " " + name + " (" +
-                    std::to_string(hours) + "ч " + std::to_string(minutes) + "м)";
+                    std::to_string(hours) + "h " + std::to_string(minutes) + "m)";
 
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, gossipText, GOSSIP_SENDER_MAIN, 100 + rewardId);
             }
             while (rewards->NextRow());
         }
 
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Назад", GOSSIP_SENDER_MAIN, 0);
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Back", GOSSIP_SENDER_MAIN, 0);
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
     }
 
@@ -815,12 +882,12 @@ private:
         uint32 minutes = (totalTime % 3600) / 60;
         uint32 seconds = totalTime % 60;
 
-        std::string timeStr = "Время выживания: " + std::to_string(hours) + "ч " +
-                             std::to_string(minutes) + "м " + std::to_string(seconds) + "с";
+        std::string timeStr = "Survival time: " + std::to_string(hours) + "h " +
+                             std::to_string(minutes) + "m " + std::to_string(seconds) + "s";
 
         AddGossipItemFor(player, GOSSIP_ICON_CHAT, timeStr, GOSSIP_SENDER_MAIN, 1);
 
-        // Показываем количество полученных наград
+        // Show claimed survival time rewards
         QueryResult claimedCount = CharacterDatabase.PQuery(
             "SELECT COUNT(*) FROM hardcore_rewards_claimed WHERE guid = {}",
             player->GetGUID().GetCounter());
@@ -828,11 +895,35 @@ private:
         if (claimedCount)
         {
             uint32 count = (*claimedCount)[0].GetUInt32();
-            std::string rewardsStr = "Получено наград: " + std::to_string(count);
+            std::string rewardsStr = "Time rewards claimed: " + std::to_string(count);
             AddGossipItemFor(player, GOSSIP_ICON_CHAT, rewardsStr, GOSSIP_SENDER_MAIN, 1);
         }
 
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Назад", GOSSIP_SENDER_MAIN, 0);
+        // Show claimed level rewards
+        QueryResult levelRewardsCount = CharacterDatabase.PQuery(
+            "SELECT COUNT(*) FROM hardcore_rewards_received WHERE player_guid = {}",
+            player->GetGUID().GetCounter());
+
+        if (levelRewardsCount)
+        {
+            uint32 count = (*levelRewardsCount)[0].GetUInt32();
+            std::string levelRewardsStr = "Level rewards claimed: " + std::to_string(count);
+            AddGossipItemFor(player, GOSSIP_ICON_CHAT, levelRewardsStr, GOSSIP_SENDER_MAIN, 1);
+        }
+
+        // Extra life status
+        bool hasExtraLife = false;
+        QueryResult extraLifeResult = CharacterDatabase.PQuery(
+            "SELECT has_extra_life FROM hardcore_extra_lives WHERE player_guid = {}",
+            player->GetGUID().GetCounter()
+        );
+        if (extraLifeResult && (*extraLifeResult)[0].GetBool())
+            hasExtraLife = true;
+
+        std::string extraLifeStr = "Extra life: " + std::string(hasExtraLife ? "|cff00ff00Yes|r" : "|cffff0000No|r");
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, extraLifeStr, GOSSIP_SENDER_MAIN, 1);
+
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Back", GOSSIP_SENDER_MAIN, 0);
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
     }
 
@@ -847,7 +938,7 @@ private:
 
         if (!rewards)
         {
-            ChatHandler(player->GetSession()).SendSysMessage("Награды не найдены!");
+            ChatHandler(player->GetSession()).SendSysMessage("No rewards found!");
             OnGossipHello(player);
             return;
         }
@@ -869,12 +960,12 @@ private:
         if (rewardsClaimed > 0)
         {
             ChatHandler(player->GetSession()).PSendSysMessage(
-                "Вы получили %u наград за время выживания!", rewardsClaimed);
+                "You received %u rewards for survival time!", rewardsClaimed);
         }
         else
         {
             ChatHandler(player->GetSession()).SendSysMessage(
-                "Нет доступных наград для получения.");
+                "No rewards available to claim.");
         }
 
         OnGossipHello(player);
@@ -891,7 +982,7 @@ private:
 
         if (!history)
         {
-            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "История наград пуста", GOSSIP_SENDER_MAIN, 1);
+            AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Reward history is empty", GOSSIP_SENDER_MAIN, 1);
         }
         else
         {
@@ -905,15 +996,15 @@ private:
                 uint32 hours = playtimeWhen / 3600;
                 uint32 minutes = (playtimeWhen % 3600) / 60;
 
-                std::string historyText = name + " (при " + std::to_string(hours) +
-                                        "ч " + std::to_string(minutes) + "м)";
+                std::string historyText = name + " (at " + std::to_string(hours) +
+                                        "h " + std::to_string(minutes) + "m)";
 
                 AddGossipItemFor(player, GOSSIP_ICON_CHAT, historyText, GOSSIP_SENDER_MAIN, 1);
             }
             while (history->NextRow());
         }
 
-        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Назад", GOSSIP_SENDER_MAIN, 0);
+        AddGossipItemFor(player, GOSSIP_ICON_CHAT, "Back", GOSSIP_SENDER_MAIN, 0);
         SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
     }
 
@@ -986,10 +1077,10 @@ private:
         }
 
         if (experience)
-            {
-                player->GiveXP(experience, nullptr, false);
-                me->Whisper("|cff00ff00[HARDCORE]|r Вы получили %u очков опыта!", LANG_UNIVERSAL, player, experience);
-            }
+        {
+            player->GiveXP(experience, nullptr, false);
+            me->Whisper("|cff00ff00[HARDCORE]|r You received %u XP!", LANG_UNIVERSAL, player, experience);
+        }
 			
         // Сохранение информации о полученной награде
         CharacterDatabase.PExecute(
@@ -1011,8 +1102,9 @@ void AddSC_hardcore_mode()
 {
     new HardcoreModePlayerScript();
     new hardcore_trade_restrictions();
-	new hardcore_activator_ai();
-	new npc_hardcore_time_rewards();
+    new hardcore_group_restrictions();
+    new hardcore_activator_ai();
+    new npc_hardcore_time_rewards();
 }
 
 /*

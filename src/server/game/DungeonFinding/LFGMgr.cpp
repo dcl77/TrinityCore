@@ -439,7 +439,9 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
     }
 
     // Check player or group member restrictions
-    if (!player->GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_DUNGEON_FINDER))
+    if (sConfigMgr->GetBoolDefault("Hardcore.Enable", false) && player->HasFlag(PLAYER_FLAGS, 0x10000000))
+        joinData.result = LFG_JOIN_NOT_MEET_REQS;
+    else if (!player->GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_DUNGEON_FINDER))
         joinData.result = LFG_JOIN_NOT_MEET_REQS;
     else if (player->InBattleground() || player->InArena() || player->InBattlegroundQueue())
         joinData.result = LFG_JOIN_USING_BG_SYSTEM;
@@ -462,8 +464,11 @@ void LFGMgr::JoinLfg(Player* player, uint8 roles, LfgDungeonSet& dungeons, const
             {
                 if (Player* plrg = itr->GetSource())
                 {
-                    if (!plrg->GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_DUNGEON_FINDER))
+                    if (sConfigMgr->GetBoolDefault("Hardcore.Enable", false) && plrg->HasFlag(PLAYER_FLAGS, 0x10000000))
                         joinData.result = LFG_JOIN_PARTY_NOT_MEET_REQS;
+                    else if (!plrg->GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_DUNGEON_FINDER))
+                        joinData.result = LFG_JOIN_PARTY_NOT_MEET_REQS;
+
                     if (plrg->HasAura(LFG_SPELL_DUNGEON_DESERTER))
                         joinData.result = LFG_JOIN_PARTY_DESERTER;
                     else if (!isContinue && plrg->HasAura(LFG_SPELL_DUNGEON_COOLDOWN))
