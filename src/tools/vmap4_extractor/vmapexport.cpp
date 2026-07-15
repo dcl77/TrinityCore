@@ -138,7 +138,8 @@ bool ExtractSingleWmo(std::string& fname)
         for (uint32 i = 0; i < froot.nGroups; ++i)
         {
             char temp[1024];
-            strncpy(temp, fname.c_str(), 1024);
+            strncpy(temp, fname.c_str(), sizeof(temp) - 1);
+            temp[sizeof(temp) - 1] = '\0';
             temp[fname.length()-4] = 0;
 
             WMOGroup fgroup(Trinity::StringFormat("{}_{:03}.wmo", temp, i));
