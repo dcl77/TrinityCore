@@ -38,16 +38,20 @@ std::array<char, 5> ToCharArray(uint32 value)
         return ' ';
     };
 
-    std::array<char, 5> chars = { char((value >> 24) & 0xFF), char((value >> 16) & 0xFF), char((value >> 8) & 0xFF), char(value & 0xFF), '\0' };
+    char raw[4] = { char((value >> 24) & 0xFF), char((value >> 16) & 0xFF), char((value >> 8) & 0xFF), char(value & 0xFF) };
 
-    auto firstNonZero = std::ranges::find_if(chars, [](char c) { return c != '\0'; });
-    if (firstNonZero != chars.end())
+    int firstNonZeroIdx = 0;
+    while (firstNonZeroIdx < 4 && raw[firstNonZeroIdx] == '\0')
     {
-        // move leading zeros to end
-        std::rotate(chars.begin(), firstNonZero, chars.end());
+        ++firstNonZeroIdx;
+    }
 
-        // ensure we only have printable characters remaining
-        std::ranges::transform(chars, chars.begin(), normalize);
+    std::array<char, 5> chars = { '\0', '\0', '\0', '\0', '\0' };
+    int destIdx = 0;
+
+    for (int i = firstNonZeroIdx; i < 4; ++i)
+    {
+        chars[destIdx++] = normalize(raw[i]);
     }
 
     return chars;

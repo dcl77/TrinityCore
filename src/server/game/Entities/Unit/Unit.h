@@ -1503,7 +1503,7 @@ class TC_GAME_API Unit : public WorldObject
         void UpdateResistanceBuffModsMod(SpellSchools school);
         void InitStatBuffMods();
         void UpdateStatBuffMod(Stats stat);
-        void SetCreateStat(Stats stat, float val) { m_createStats[stat] = val; }
+        void SetCreateStat(Stats stat, float val) { if (stat < MAX_STATS) m_createStats[stat] = val; }
         void SetCreateHealth(uint32 val) { SetUInt32Value(UNIT_FIELD_BASE_HEALTH, val); }
         uint32 GetCreateHealth() const { return GetUInt32Value(UNIT_FIELD_BASE_HEALTH); }
         void SetCreateMana(uint32 val) { SetUInt32Value(UNIT_FIELD_BASE_MANA, val); }
@@ -1511,7 +1511,7 @@ class TC_GAME_API Unit : public WorldObject
         uint32 GetCreatePowerValue(Powers power) const;
         float GetPosStat(Stats stat) const { return GetFloatValue(UNIT_FIELD_POSSTAT0 + int32(stat)); }
         float GetNegStat(Stats stat) const { return GetFloatValue(UNIT_FIELD_NEGSTAT0 + int32(stat)); }
-        float GetCreateStat(Stats stat) const { return m_createStats[stat]; }
+        float GetCreateStat(Stats stat) const { return stat < MAX_STATS ? m_createStats[stat] : 0.0f; }
 
         uint32 GetChannelSpellId() const { return GetUInt32Value(UNIT_CHANNEL_SPELL); }
         void SetChannelSpellId(uint32 channelSpellId) { SetUInt32Value(UNIT_CHANNEL_SPELL, channelSpellId); }
