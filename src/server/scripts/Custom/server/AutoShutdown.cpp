@@ -134,7 +134,7 @@ void AutoShutdown::Init()
     scheduler.Schedule(Seconds(diffToPreAnn), [preAnnSeconds](TaskContext /*context*/)
         {
             std::string preAnnMessForm = sGameConfig->GetStringConfig("AutoShutdown.PreAnnounce.Message");
-            std::string mge = std::string((preAnnMessForm, secsToTimeString(preAnnSeconds)));
+            std::string mge = Trinity::StringFormat(fmt::runtime(preAnnMessForm), secsToTimeString(preAnnSeconds));
 
             TC_LOG_INFO("server", "> {}", mge);
 
