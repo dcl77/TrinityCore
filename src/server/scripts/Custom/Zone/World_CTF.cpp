@@ -32,15 +32,6 @@ GCTF::~GCTF()
 {
     if (sGCTF->test) { TC_LOG_INFO("server.loading", "", ">>    <[{DEFINE + CLEAR TABLES}]>    <<"); }
 
-    for (std::unordered_map<uint32, WorldFlags_Elements>::iterator itr = WorldFlags.begin(); itr != WorldFlags.end(); ++itr)
-        delete& itr->second;
-    for (std::unordered_map<uint32, FlagList_Elements>::iterator itr = FlagList.begin(); itr != FlagList.end(); ++itr)
-        delete& itr->second;
-    for (std::unordered_map<uint32, WorldPlayerData_Elements>::iterator itr = WorldPlayerData.begin(); itr != WorldPlayerData.end(); ++itr)
-        delete& itr->second;
-    for (std::unordered_map<uint32, PlayerLeaderBoard_Elements>::iterator itr = PlayerLeaderBoard.begin(); itr != PlayerLeaderBoard.end(); ++itr)
-        delete& itr->second;
-
     WorldFlags.clear();
     FlagList.clear();
     WorldPlayerData.clear();

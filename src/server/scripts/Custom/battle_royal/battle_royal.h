@@ -90,8 +90,8 @@ private:
     bool gameStarted = false;
     bool aggressivePlayers = false;
     bool startInfecting = false;
-    int playerLimit = 40;
-    int requiredPlayers = 3;
+    uint32 playerLimit = 40;
+    uint32 requiredPlayers = 3;
     int currentIteration = 1;
     int startTimer = 60000;
     int relicSwitchTimer = 60000;
