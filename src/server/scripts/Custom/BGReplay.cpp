@@ -1992,12 +1992,15 @@ namespace
 
     bool BuildPlaybackPacket(PacketRecord const& frame, MatchRecord const& match, WorldPacket& out)
     {
+        uint16 outOpcode = frame.Packet.GetOpcode();
+        if (outOpcode == SMSG_BATTLEGROUND_PLAYER_JOINED || outOpcode == SMSG_BATTLEGROUND_PLAYER_LEFT)
+            return false;
+
         std::vector<uint8> payload(frame.Packet.size());
         if (!payload.empty())
             std::memcpy(payload.data(), frame.Packet.contents(), payload.size());
 
         bool rewriteOk = true;
-        uint16 outOpcode = frame.Packet.GetOpcode();
 
         if (frame.Packet.GetOpcode() == SMSG_COMPRESSED_UPDATE_OBJECT)
         {
