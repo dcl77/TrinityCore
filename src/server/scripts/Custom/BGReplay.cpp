@@ -1996,87 +1996,33 @@ namespace
         if (!payload.empty())
             std::memcpy(payload.data(), frame.Packet.contents(), payload.size());
 
+        bool rewriteOk = true;
         uint16 outOpcode = frame.Packet.GetOpcode();
 
-        if (outOpcode == SMSG_COMPRESSED_UPDATE_OBJECT)
+        if (frame.Packet.GetOpcode() == SMSG_COMPRESSED_UPDATE_OBJECT)
         {
-            if (payload.size() < 4)
+            rewriteOk = RewriteCompressedUpdateObjectPayloadToUncompressed(payload, match);
+            if (!rewriteOk)
                 return false;
-
-            uint32 uncompressedSize = uint32(payload[0]) | (uint32(payload[1]) << 8) | (uint32(payload[2]) << 16) | (uint32(payload[3]) << 24);
-            if (!uncompressedSize || uncompressedSize > 16 * 1024 * 1024)
-                return false;
-
-            std::vector<uint8> decompressed(uncompressedSize);
-            uLongf actualSize = uncompressedSize;
-
-            int zResult = uncompress(decompressed.data(), &actualSize, payload.data() + 4, uLong(payload.size() - 4));
-            if (zResult != Z_OK || actualSize != uncompressedSize)
-                return false;
-
-            payload.swap(decompressed);
             outOpcode = SMSG_UPDATE_OBJECT;
         }
-
-        for (ReplayActor const& actor : match.Actors)
+        else if (frame.Packet.GetOpcode() == SMSG_UPDATE_OBJECT)
         {
-            uint64 fromRaw = actor.OriginalGuid.GetRawValue();
-            uint64 toRaw = actor.FakeGuid.GetRawValue();
-
-            if (!fromRaw || fromRaw == toRaw)
-                continue;
-
-            // 1. Raw 8-byte GUID replacement in-place
-            if (payload.size() >= 8)
-            {
-                std::array<uint8, 8> fromBytes{};
-                std::array<uint8, 8> toBytes{};
-                WriteUInt64BytesLE(fromBytes, fromRaw);
-                WriteUInt64BytesLE(toBytes, toRaw);
-
-                for (size_t i = 0; i + 8 <= payload.size(); ++i)
-                {
-                    if (std::equal(fromBytes.begin(), fromBytes.end(), payload.begin() + i))
-                    {
-                        std::copy(toBytes.begin(), toBytes.end(), payload.begin() + i);
-                        i += 7;
-                    }
-                }
-            }
-
-            // 2. Packed GUID replacement in-place
-            std::vector<uint8> fromPacked = ToPackedGuidBytes(fromRaw);
-            std::vector<uint8> toPacked = ToPackedGuidBytes(toRaw);
-
-            if (!fromPacked.empty() && fromPacked.size() == toPacked.size())
-            {
-                auto it = payload.begin();
-                while (it != payload.end())
-                {
-                    it = std::search(it, payload.end(), fromPacked.begin(), fromPacked.end());
-                    if (it == payload.end())
-                        break;
-
-                    std::copy(toPacked.begin(), toPacked.end(), it);
-                    it += toPacked.size();
-                }
-            }
+            rewriteOk = RewriteUpdateObjectPayload(payload, match);
+        }
+        else
+        {
+            RewriteNonUpdatePacketGuids(frame.Packet.GetOpcode(), payload, match);
         }
 
-        if (outOpcode == SMSG_DESTROY_OBJECT || outOpcode == SMSG_ARENA_UNIT_DESTROYED)
+        if (outOpcode == SMSG_UPDATE_OBJECT || outOpcode == SMSG_COMPRESSED_UPDATE_OBJECT)
         {
-            uint64 firstRaw = 0;
-            if (ReadUInt64At(payload, 0, firstRaw))
-            {
-                ObjectGuid firstGuid;
-                firstGuid.SetRawValue(firstRaw);
-                if (FindReplayActorByGuid(match, firstGuid))
-                {
-                    payload.clear();
-                    return false;
-                }
-            }
+            if (PacketPayloadContainsOriginalActorGuid(outOpcode, payload, match))
+                return false;
         }
+
+        if (payload.empty() && (outOpcode == SMSG_DESTROY_OBJECT || outOpcode == SMSG_ARENA_UNIT_DESTROYED))
+            return false;
 
         out = WorldPacket(outOpcode, payload.size());
         if (!payload.empty())
