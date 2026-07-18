@@ -341,3 +341,8 @@ bool IsFakeReplayPlayerGuid(ObjectGuid /*guid*/, std::string& /*name*/, uint8& /
 {
     return false;
 }
+
+class Battlefield;
+void SaveBattlefieldReplay(Battlefield* /*bf*/)
+{
+}

@@ -212,6 +212,8 @@ void Battlefield::EndBattle(bool endByTimer)
         m_freeslots[i] = m_MaxPlayer;
 
     OnBattleEnd(endByTimer);
+    extern void SaveBattlefieldReplay(Battlefield* bf);
+    SaveBattlefieldReplay(this);
     InvitePlayersInZoneToQueue();
 
     // Reset bat0tlefield timer

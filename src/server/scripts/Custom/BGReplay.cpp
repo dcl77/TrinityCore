@@ -24,6 +24,8 @@
 #include "World.h"
 #include "ChatPackets.h"
 #include "QueryPackets.h"
+#include "Battlefield.h"
+#include "BattlefieldMgr.h"
 #include <DBCStores.h>
 #include <algorithm>
 #include <cmath>
@@ -463,6 +465,45 @@ namespace
         record.MapId = bg->GetMapId();
 
         RefreshActorsFromBattleground(bg, record);
+        return record;
+    }
+
+    MatchRecord& GetOrCreateRecord(Battlefield* bf)
+    {
+        MatchRecord& record = Records[bf->GetZoneId()];
+
+        if (!record.RecordStartMs)
+            record.RecordStartMs = getMSTime();
+
+        record.TypeId = BATTLEGROUND_TYPE_NONE;
+        record.ArenaTypeId = 0;
+        record.MapId = bf->GetMapId();
+
+        std::unordered_set<uint64> seen;
+        for (ReplayActor const& actor : record.Actors)
+            seen.insert(actor.OriginalGuid.GetRawValue());
+
+        for (auto const& it : bf->GetPlayerMap())
+        {
+            if (seen.find(it.first.GetRawValue()) != seen.end())
+                continue;
+
+            Player* player = ObjectAccessor::FindConnectedPlayer(it.first);
+            if (!player)
+                continue;
+
+            ReplayActor actor;
+            actor.OriginalGuid = player->GetGUID();
+            actor.Name = player->GetName();
+            actor.Race = player->GetRace();
+            actor.Class = player->GetClass();
+            actor.Gender = uint8(player->GetGender());
+            actor.Team = player->GetBGTeam();
+
+            record.Actors.push_back(actor);
+            seen.insert(actor.OriginalGuid.GetRawValue());
+        }
+
         return record;
     }
 
@@ -3476,6 +3517,13 @@ namespace
         }
     }
 
+    bool ShouldRecordBattlefieldPacket(Battlefield* bf, WorldPacket const& packet)
+    {
+        if (!bf)
+            return false;
+        return bf->IsWarTime() && IsWatchedOpcode(packet.GetOpcode());
+    }
+
 class BGReplayServerScript : public ServerScript
 {
 public:
@@ -3488,40 +3536,73 @@ public:
 
         Player* player = session->GetPlayer();
         Battleground* bg = player->GetBattleground();
+        Battlefield* bf = nullptr;
 
-        if (!bg || bg->IsReplay())
-            return;
-
-        if (!bg->isArena() && !sConfigMgr->GetBoolDefault("ArenaReplay.SaveBattlegrounds", true))
-            return;
-
-        if (!ShouldRecordPacket(bg, packet))
-            return;
-
-        if (!IsTeamRecorder(bg, player))
-            return;
-
-        MatchRecord& record = GetOrCreateRecord(bg);
-        uint32 nowMs = getMSTime();
-
-        if (IsDuplicateRecentPacket(record, packet, nowMs))
-            return;
-
-        uint32 timestamp = 0;
-        if (bg->GetStatus() == STATUS_WAIT_JOIN)
+        if (!bg)
         {
-            timestamp = 0;
-            ++record.PreStartPacketCount;
+            bf = sBattlefieldMgr->GetBattlefieldToZoneId(player->GetZoneId());
+            if (!bf || !bf->IsWarTime() || !bf->HasPlayer(player))
+                bf = nullptr;
         }
-        else
+
+        if (bg)
         {
+            if (bg->IsReplay())
+                return;
+
+            if (!bg->isArena() && !sConfigMgr->GetBoolDefault("ArenaReplay.SaveBattlegrounds", true))
+                return;
+
+            if (!ShouldRecordPacket(bg, packet))
+                return;
+
+            if (!IsTeamRecorder(bg, player))
+                return;
+
+            MatchRecord& record = GetOrCreateRecord(bg);
+            uint32 nowMs = getMSTime();
+
+            if (IsDuplicateRecentPacket(record, packet, nowMs))
+                return;
+
+            uint32 timestamp = 0;
+            if (bg->GetStatus() == STATUS_WAIT_JOIN)
+            {
+                timestamp = 0;
+                ++record.PreStartPacketCount;
+            }
+            else
+            {
+                if (!record.InProgressStartMs)
+                {
+                    record.InProgressStartMs = nowMs;
+                }
+                timestamp = ARENA_REPLAY_PRELOAD_MS + (nowMs - record.InProgressStartMs);
+            }
+            record.Packets.push_back({ timestamp, WorldPacket(packet) });
+        }
+        else if (bf)
+        {
+            if (!sConfigMgr->GetBoolDefault("ArenaReplay.SaveBattlefields", true))
+                return;
+
+            if (!ShouldRecordBattlefieldPacket(bf, packet))
+                return;
+
+            MatchRecord& record = GetOrCreateRecord(bf);
+            uint32 nowMs = getMSTime();
+
+            if (IsDuplicateRecentPacket(record, packet, nowMs))
+                return;
+
+            uint32 timestamp = 0;
             if (!record.InProgressStartMs)
             {
                 record.InProgressStartMs = nowMs;
             }
             timestamp = ARENA_REPLAY_PRELOAD_MS + (nowMs - record.InProgressStartMs);
+            record.Packets.push_back({ timestamp, WorldPacket(packet) });
         }
-        record.Packets.push_back({ timestamp, WorldPacket(packet) });
     }
 
     void OnPacketReceive(WorldSession* session, WorldPacket& packet) override
@@ -3884,6 +3965,69 @@ bool IsFakeReplayPlayerGuid(ObjectGuid guid, std::string& name, uint8& race, uin
         }
     }
     return false;
+}
+
+void SaveBattlefieldReplay(Battlefield* bf)
+{
+    if (!bf)
+        return;
+
+    if (!sConfigMgr->GetBoolDefault("ArenaReplay.Enable", true))
+        return;
+
+    if (!sConfigMgr->GetBoolDefault("ArenaReplay.SaveBattlefields", true))
+        return;
+
+    auto recordItr = Records.find(bf->GetZoneId());
+    if (recordItr == Records.end())
+        return;
+
+    MatchRecord& match = recordItr->second;
+
+    std::unordered_set<uint64> seen;
+    for (ReplayActor const& actor : match.Actors)
+        seen.insert(actor.OriginalGuid.GetRawValue());
+
+    for (auto const& it : bf->GetPlayerMap())
+    {
+        if (seen.find(it.first.GetRawValue()) != seen.end())
+            continue;
+
+        Player* player = ObjectAccessor::FindConnectedPlayer(it.first);
+        if (!player)
+            continue;
+
+        ReplayActor actor;
+        actor.OriginalGuid = player->GetGUID();
+        actor.Name = player->GetName();
+        actor.Race = player->GetRace();
+        actor.Class = player->GetClass();
+        actor.Gender = uint8(player->GetGender());
+        actor.Team = player->GetBGTeam();
+
+        match.Actors.push_back(actor);
+        seen.insert(actor.OriginalGuid.GetRawValue());
+    }
+
+    if (match.Packets.empty())
+    {
+        Records.erase(recordItr);
+        return;
+    }
+
+    ByteBuffer buffer;
+    SerializeMatchData(match, buffer);
+    std::vector<uint8> rawReplay(buffer.contents(), buffer.contents() + buffer.size());
+
+    CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARENA_REPLAYS);
+    stmt->setUInt32(0, 0);
+    stmt->setUInt32(1, uint32(BATTLEGROUND_TYPE_NONE));
+    stmt->setUInt32(2, uint32(rawReplay.size()));
+    stmt->setBinary(3, rawReplay);
+    stmt->setUInt32(4, bf->GetMapId());
+    CharacterDatabase.Execute(stmt);
+
+    Records.erase(recordItr);
 }
 
 void AddBGReplayScripts()
