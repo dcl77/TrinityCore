@@ -4030,8 +4030,14 @@ void SaveBattlefieldReplay(Battlefield* bf)
     Records.erase(recordItr);
 }
 
+extern bool (*IsFakeReplayPlayerGuidPtr)(ObjectGuid, std::string&, uint8&, uint8&, uint8&);
+extern void (*SaveBattlefieldReplayPtr)(Battlefield*);
+
 void AddBGReplayScripts()
 {
+    IsFakeReplayPlayerGuidPtr = &IsFakeReplayPlayerGuid;
+    SaveBattlefieldReplayPtr = &SaveBattlefieldReplay;
+
     new BGReplayServerScript();
     new BGReplayWorldScript();
     new BGReplayPlayerScript();
