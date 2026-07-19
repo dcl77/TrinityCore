@@ -3395,6 +3395,14 @@ namespace
         stmt->setUInt32(2, uint32(rawReplay.size()));
         stmt->setBinary(3, rawReplay);
         stmt->setUInt32(4, bg->GetMapId());
+        stmt->setString(5, winnerTeamName);
+        stmt->setUInt32(6, winnerTeamRating);
+        stmt->setUInt32(7, winnerTeamMMR);
+        stmt->setString(8, loserTeamName);
+        stmt->setUInt32(9, loserTeamRating);
+        stmt->setUInt32(10, loserTeamMMR);
+        stmt->setString(11, winnerPlayerGuids);
+        stmt->setString(12, loserPlayerGuids);
         CharacterDatabase.Execute(stmt);
 
         for (auto const& bgPlayer : bg->GetPlayers())
@@ -4019,12 +4027,33 @@ void SaveBattlefieldReplay(Battlefield* bf)
     SerializeMatchData(match, buffer);
     std::vector<uint8> rawReplay(buffer.contents(), buffer.contents() + buffer.size());
 
+    uint32 winnerTeam = bf->GetDefenderTeam();
+    uint32 loserTeam = bf->GetAttackerTeam();
+
+    std::string winnerPlayerGuids = JoinActorGuidList(match, winnerTeam);
+    std::string loserPlayerGuids = JoinActorGuidList(match, loserTeam);
+
+    std::string winnerTeamName = (winnerTeam == ALLIANCE) ? "Alliance" : "Horde";
+    std::string loserTeamName = (loserTeam == ALLIANCE) ? "Alliance" : "Horde";
+    uint32 winnerTeamRating = 0;
+    uint32 loserTeamRating = 0;
+    uint32 winnerTeamMMR = 0;
+    uint32 loserTeamMMR = 0;
+
     CharacterDatabasePreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_ARENA_REPLAYS);
     stmt->setUInt32(0, 0);
     stmt->setUInt32(1, uint32(BATTLEGROUND_TYPE_NONE));
     stmt->setUInt32(2, uint32(rawReplay.size()));
     stmt->setBinary(3, rawReplay);
     stmt->setUInt32(4, bf->GetMapId());
+    stmt->setString(5, winnerTeamName);
+    stmt->setUInt32(6, winnerTeamRating);
+    stmt->setUInt32(7, winnerTeamMMR);
+    stmt->setString(8, loserTeamName);
+    stmt->setUInt32(9, loserTeamRating);
+    stmt->setUInt32(10, loserTeamMMR);
+    stmt->setString(11, winnerPlayerGuids);
+    stmt->setString(12, loserPlayerGuids);
     CharacterDatabase.Execute(stmt);
 
     Records.erase(recordItr);
