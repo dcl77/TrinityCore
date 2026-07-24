@@ -30,7 +30,7 @@
 #include <charconv>
 
 Warden::Warden() : _session(nullptr), _checkTimer(10 * IN_MILLISECONDS), _clientResponseTimer(0),
-                   _dataSent(false), _initialized(false), _interrupted(false), _checkInProgress(false), _interruptCounter(0)
+                   _dataSent(false), _initialized(false)
 {
 }
 
@@ -263,11 +263,6 @@ bool Warden::ProcessLuaCheckResponse(std::string const& msg)
     char const* penalty = ApplyPenalty(nullptr);
     TC_LOG_WARN("warden", "{} sent bogus Lua check response for Warden. Action: {}", _session->GetPlayerInfo(), penalty);
     return true;
-}
-
-WardenPayloadMgr* Warden::GetPayloadMgr()
-{
-    return &_payloadMgr;
 }
 
 void WorldSession::HandleWardenDataOpcode(WorldPacket& recvData)

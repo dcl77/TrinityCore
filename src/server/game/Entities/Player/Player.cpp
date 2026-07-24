@@ -67,6 +67,7 @@
 #include "KillRewarder.h"
 #include "Language.h"
 #include "LFGMgr.h"
+#include "ArenaSpectator.h"
 #include "Log.h"
 #include "LootItemStorage.h"
 #include "LootMgr.h"
@@ -1806,7 +1807,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             }
 
             // remove arena spell coldowns/buffs now to also remove pet's cooldowns before it's temporarily unsummoned
-            if (mEntry->IsBattleArena() && !IsGameMaster())
+            if (mEntry->IsBattlegroundOrArena() && !IsGameMaster() && (HasPendingSpectatorForBG(0) || !HasPendingSpectatorForBG(GetBattlegroundId())))
             {
                 RemoveArenaSpellCooldowns(true);
                 RemoveArenaAuras();
@@ -23585,6 +23586,18 @@ void Player::SetBattlegroundId(uint32 val, BattlegroundTypeId bgTypeId)
     m_bgData.bgTypeID = bgTypeId;
 }
 
+void Player::SetBattlegroundId(uint32 id, BattlegroundTypeId bgTypeId, uint32 queueSlot, bool invited, bool isRandom, TeamId teamId)
+{
+    m_bgData.bgInstanceID = id;
+    m_bgData.bgTypeID = bgTypeId;
+    m_bgData.bgQueueSlot = queueSlot;
+    m_bgData.isInvited = invited;
+    m_bgData.bgIsRandom = isRandom;
+
+    m_bgData.bgTeamId = teamId;
+    SetByteValue(PLAYER_BYTES_3, 3, uint8(teamId == TEAM_ALLIANCE ? 1 : 0));
+}
+
 uint32 Player::AddBattlegroundQueueId(BattlegroundQueueTypeId val)
 {
     for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
@@ -27112,4 +27125,91 @@ void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std::string
 GameClient* Player::GetGameClient() const
 {
     return GetSession()->GetGameClient();
+}
+
+void Player::SetEntryPoint()
+{
+    m_entryPointData.joinPos.m_mapId = MAPID_INVALID;
+    m_entryPointData.ClearTaxiPath();
+
+    if (!m_taxi.empty())
+    {
+        m_entryPointData.mountSpell = 0;
+        m_entryPointData.joinPos = WorldLocation(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+
+        m_entryPointData.taxiPath[0] = m_taxi.GetTaxiSource();
+        m_entryPointData.taxiPath[1] = m_taxi.GetTaxiDestination();
+    }
+    else
+    {
+        if (IsMounted())
+        {
+            AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOUNTED);
+            if (!auras.empty())
+                m_entryPointData.mountSpell = (*auras.begin())->GetId();
+        }
+        else
+            m_entryPointData.mountSpell = 0;
+
+        if (!GetMap()->IsBattlegroundOrArena())
+            m_entryPointData.joinPos = WorldLocation(GetMapId(), GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
+    }
+
+    if (m_entryPointData.joinPos.m_mapId == MAPID_INVALID)
+        m_entryPointData.joinPos = WorldLocation(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, 0);
+}
+
+void Player::SetIsSpectator(bool on)
+{
+    if (on)
+    {
+        AddAura(SPECTATOR_SPELL_SPEED, this);
+        m_ExtraFlags |= PLAYER_EXTRA_SPECTATOR_ON;
+        AddUnitState(UNIT_STATE_ISOLATED);
+        //SetFaction(1100);
+        SetUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        if (HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
+        {
+            RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+        }
+        ResetContestedPvP();
+        SetDisplayId(23691);
+    }
+    else
+    {
+        RemoveAurasDueToSpell(SPECTATOR_SPELL_SPEED);
+        if (IsSpectator())
+            ClearUnitState(UNIT_STATE_ISOLATED);
+        m_ExtraFlags &= ~PLAYER_EXTRA_SPECTATOR_ON;
+        RemoveUnitFlag(UNIT_FLAG_NON_ATTACKABLE);
+        RestoreDisplayId();
+
+        if (!IsGameMaster())
+        {
+            //SetFactionForRace(getRace());
+
+            // restore FFA PvP Server state
+            // Xinef: it will be removed if necessery in UpdateArea called in WorldPortOpcode
+            if (sWorld->IsFFAPvPRealm())
+            {
+                if (!HasByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP))
+                {
+                    SetByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP);
+
+                }
+            }
+        }
+    }
+}
+
+bool Player::NeedSendSpectatorData() const
+{
+    if (FindMap() && FindMap()->IsBattleArena() && !IsSpectator())
+    {
+        Battleground* bg = ((BattlegroundMap*)FindMap())->GetBG();
+        if (bg && bg->HaveSpectators() && bg->GetStatus() == STATUS_IN_PROGRESS && !bg->GetPlayers().empty())
+            if (bg->GetPlayers().find(GetGUID()) != bg->GetPlayers().end())
+                return true;
+    }
+    return false;
 }

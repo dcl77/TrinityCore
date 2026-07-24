@@ -75,15 +75,11 @@ class TC_GAME_API WardenWin : public Warden
         void RequestHash() override;
         void HandleHashResult(ByteBuffer &buff) override;
         void RequestChecks() override;
-        bool IsCheckInProgress() override;
-        void ForceChecks() override;
         void HandleCheckResult(ByteBuffer &buff) override;
 
         size_t DEBUG_ForceSpecificChecks(std::vector<uint16> const& checks) override;
 
     private:
-        WardenCheck const* GetWardenCheck(uint16 id) const;
-
         uint32 _serverTicks;
         std::array<std::pair<std::vector<uint16>, std::vector<uint16>::const_iterator>, NUM_CHECK_CATEGORIES> _checks;
         std::vector<uint16> _currentChecks;
