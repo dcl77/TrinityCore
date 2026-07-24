@@ -16,6 +16,8 @@
  */
 
 #include "AnticheatMgr.h"
+#include "ArenaSpectator.h"
+#include "BattlegroundMgr.h"
 #include "Battleground.h"
 #include "Common.h"
 #include "Corpse.h"
@@ -270,8 +272,29 @@ void WorldSession::HandleMoveWorldportAck()
         // join to bg case
         else if (Battleground* bg = player->GetBattleground())
         {
-            if (player->IsInvitedForBattlegroundInstance(player->GetBattlegroundId()))
+            if (player->IsInvitedForBattlegroundInstance(player->GetBattlegroundId())
+                || player->IsSpectator())
                 bg->AddPlayer(player);
+        }
+    }
+
+    {
+        if (newMap->IsBattleArena() && ((BattlegroundMap*)newMap)->GetBG() && player->HasPendingSpectatorForBG(((BattlegroundMap*)newMap)->GetInstanceId()))
+        {
+            player->ClearReceivedSpectatorResetFor();
+            player->SetIsSpectator(true);
+            ((BattlegroundMap*)newMap)->GetBG()->AddSpectator(player);
+        }
+        else
+            player->SetIsSpectator(false);
+
+        player->SetPendingSpectatorForBG(0);
+
+        if (uint32 inviteInstanceId = player->GetPendingSpectatorInviteInstanceId())
+        {
+            if (Battleground* tbg = sBattlegroundMgr->GetBattleground(inviteInstanceId, BATTLEGROUND_TYPE_NONE))
+                tbg->RemoveToBeTeleported(player->GetGUID());
+            player->SetPendingSpectatorInviteInstanceId(0);
         }
     }
 

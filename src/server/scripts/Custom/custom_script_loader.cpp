@@ -16,6 +16,7 @@
  */
 
 // This is where scripts' loading functions should be declared:
+void AddBGReplayScripts();
 void AddSC_chat_filter_commandscript();
 void AddSC_ServerMenuPlayerGossip();
 void AddAutoReviveScripts();
@@ -154,4 +155,5 @@ void AddCustomScripts()
     AddSC_hardcore_commandscript();
     AddAutoReviveScripts();
     AddSC_ServerMenuPlayerGossip();
+    AddBGReplayScripts();
 }
