@@ -27204,7 +27204,7 @@ void Player::SetIsSpectator(bool on)
 
 bool Player::NeedSendSpectatorData() const
 {
-    if (FindMap() && FindMap()->IsBattleArena() && !IsSpectator())
+    if (FindMap() && FindMap()->IsBattlegroundOrArena() && !IsSpectator())
     {
         Battleground* bg = ((BattlegroundMap*)FindMap())->GetBG();
         if (bg && bg->HaveSpectators() && bg->GetStatus() == STATUS_IN_PROGRESS && !bg->GetPlayers().empty())

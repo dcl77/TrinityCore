@@ -279,7 +279,7 @@ void WorldSession::HandleMoveWorldportAck()
     }
 
     {
-        if (newMap->IsBattleArena() && ((BattlegroundMap*)newMap)->GetBG() && player->HasPendingSpectatorForBG(((BattlegroundMap*)newMap)->GetInstanceId()))
+        if (newMap->IsBattlegroundOrArena() && ((BattlegroundMap*)newMap)->GetBG() && player->HasPendingSpectatorForBG(((BattlegroundMap*)newMap)->GetInstanceId()))
         {
             player->ClearReceivedSpectatorResetFor();
             player->SetIsSpectator(true);
