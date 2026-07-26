@@ -78,6 +78,8 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     /// @todo add targets.read() check
     Player* pUser = _player;
 
+    WorldPacket const copy_packet = recvPacket;
+
     uint8 bagIndex, slot, castFlags;
     uint8 castCount;                                        // next cast if exists (single or not)
     ObjectGuid itemGUID;
@@ -103,6 +105,45 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     {
         pUser->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
         return;
+    }
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+    {
+        TC_LOG_ERROR("network", "WORLD: unknown spell id %u", spellId);
+        recvPacket.rfinish(); // prevent spam at ignore packet
+        return;
+    }
+
+    // fail if we are cancelling pending request
+    if (_player->m_pendingCasts.size())
+    {
+        PendingSpellCastRequest* request = _player->GetCastRequest(spellInfo->StartRecoveryCategory);
+        if (request && request->cancel_in_progress && request->spell_id == spellId)
+        {
+            pUser->SendEquipError(EQUIP_ERR_NONE, pItem, nullptr);
+            return;
+        }
+    }
+
+    // try queue spell if it can't be executed right now
+    if (!_player->CanExecutePendingSpellCastRequest(spellInfo, true))
+    {
+        if (_player->CanRequestSpellCast(spellInfo))
+        {
+            PendingSpellCastRequest newRequest
+            {
+                spellId,
+                getMSTime(),
+                true,
+                {copy_packet},
+                false,
+                castCount,
+                true,
+            };
+            _player->RequestSpellCast(newRequest, spellInfo);
+            return;
+        }
     }
 
     TC_LOG_DEBUG("network", "WORLD: CMSG_USE_ITEM packet, bagIndex: {}, slot: {}, castCount: {}, spellId: {}, Item: {}, glyphIndex: {}, data length = {}", bagIndex, slot, castCount, spellId, pItem->GetEntry(), glyphIndex, (uint32)recvPacket.size());
@@ -340,6 +381,39 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& castRe
 
     if (spellInfo->IsPassive())
         return;
+
+    // fail if we are cancelling pending request
+    if (_player->m_pendingCasts.size())
+    {
+        PendingSpellCastRequest* request = _player->GetCastRequest(spellInfo->StartRecoveryCategory);
+        if (request && request->cancel_in_progress && request->spell_id == static_cast<uint32>(castRequest.Cast.SpellID))
+        {
+            Spell* spell = new Spell(_player, spellInfo, TRIGGERED_NONE);
+            spell->m_cast_count = castRequest.Cast.CastID;
+            spell->SendCastResult(SPELL_FAILED_DONT_REPORT);
+            spell->finish(false);
+            return;
+        }
+    }
+
+    // try queue spell if it can't be executed right now
+    if (!_player->CanExecutePendingSpellCastRequest(spellInfo, true))
+    {
+        if (_player->CanRequestSpellCast(spellInfo))
+        {
+            PendingSpellCastRequest newRequest
+            {
+                static_cast<uint32>(castRequest.Cast.SpellID),
+                getMSTime(),
+                true,
+                { *castRequest.GetRawPacket() },
+                false,
+                castRequest.Cast.CastID
+            };
+            _player->RequestSpellCast(newRequest, spellInfo);
+            return;
+        }
+    }
 
     TriggerCastFlags triggerFlag = TRIGGERED_NONE;
 
