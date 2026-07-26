@@ -90,6 +90,8 @@ Battleground::Battleground()
     m_IsRated           = false;
     m_BuffChange        = false;
     m_IsRandom          = false;
+    m_IsReplay          = false;
+    m_ReplayId          = 0;
     m_LevelMin          = 0;
     m_LevelMax          = 0;
     m_InBGFreeSlotQueue = false;
@@ -174,7 +176,7 @@ void Battleground::Update(uint32 diff)
     if (!PreUpdateImpl(diff))
         return;
 
-    if (!GetPlayersSize())
+    if (!GetPlayersSize() && !IsReplay())
     {
         //BG is empty
         // if there are no players invited, delete BG
@@ -194,7 +196,7 @@ void Battleground::Update(uint32 diff)
     switch (GetStatus())
     {
         case STATUS_WAIT_JOIN:
-            if (GetPlayersSize())
+            if (GetPlayersSize() && !IsReplay())
             {
                 _ProcessJoin(diff);
                 _CheckSafePositions(diff);
@@ -893,6 +895,12 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
 
     if (player)
     {
+        if (player->IsSpectator())
+        {
+            RemoveSpectator(player);
+            player->SetIsSpectator(false);
+        }
+
         // should remove spirit of redemption
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
@@ -1253,6 +1261,12 @@ uint32 Battleground::GetFreeSlotsForTeam(uint32 Team) const
 bool Battleground::HasFreeSlots() const
 {
     return GetPlayersSize() < GetMaxPlayers();
+}
+
+void Battleground::SpectatorsSendPacket(WorldPacket& data)
+{
+    for (SpectatorList::const_iterator itr = m_Spectators.begin(); itr != m_Spectators.end(); ++itr)
+        (*itr)->GetSession()->SendPacket(&data);
 }
 
 void Battleground::BuildPvPLogDataPacket(WorldPacket& data)

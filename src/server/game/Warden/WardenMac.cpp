@@ -243,12 +243,3 @@ void WardenMac::HandleCheckResult(ByteBuffer &buff)
 
     _session->KickPlayer("WardenMac::HandleCheckResult");
 }
-
-bool WardenMac::IsCheckInProgress()
-{
-    return false;
-}
-
-void WardenMac::ForceChecks()
-{
-}

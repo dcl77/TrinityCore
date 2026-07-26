@@ -23,7 +23,6 @@
 #include "ByteBuffer.h"
 #include "Optional.h"
 #include "WardenCheckMgr.h"
-#include "WardenPayloadMgr.h"
 #include <array>
 
 enum WardenOpcodes
@@ -95,10 +94,6 @@ class TC_GAME_API Warden
         bool ProcessLuaCheckResponse(std::string const& msg);
 
         virtual size_t DEBUG_ForceSpecificChecks(std::vector<uint16> const& checks) = 0;
-        virtual bool IsCheckInProgress() = 0;
-        virtual void ForceChecks() = 0;
-
-        WardenPayloadMgr* GetPayloadMgr();
 
     protected:
         void DecryptData(uint8* buffer, uint32 length);
@@ -132,11 +127,6 @@ class TC_GAME_API Warden
         bool _dataSent;
         Optional<ClientWardenModule> _module;
         bool _initialized;
-
-        WardenPayloadMgr _payloadMgr;
-        bool _interrupted;
-        bool _checkInProgress;
-        uint32 _interruptCounter = 0;
 };
 
 #endif
