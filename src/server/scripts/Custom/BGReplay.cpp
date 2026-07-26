@@ -2962,7 +2962,15 @@ namespace
         if (!viewer || !viewer->GetSession())
             return;
 
-        ChatHandler(viewer->GetSession()).PSendSysMessage("Replay finished. Staying in the replay instance so the final frame remains visible; teleport back when done.");
+        ChatHandler(viewer->GetSession()).PSendSysMessage("Replay finished.");
+
+        Battleground* bg = viewer->GetBattleground();
+        viewer->LeaveBattleground();
+
+        if (bg && bg->IsReplay() && bg->GetSpectators().empty())
+        {
+            bg->EndNow();
+        }
     }
 
     std::string EscapeReplaySqlString(std::string value)

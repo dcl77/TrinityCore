@@ -895,6 +895,12 @@ void Battleground::RemovePlayerAtLeave(ObjectGuid guid, bool Transport, bool Sen
 
     if (player)
     {
+        if (player->IsSpectator())
+        {
+            RemoveSpectator(player);
+            player->SetIsSpectator(false);
+        }
+
         // should remove spirit of redemption
         if (player->HasAuraType(SPELL_AURA_SPIRIT_OF_REDEMPTION))
             player->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
