@@ -196,7 +196,7 @@ void Battleground::Update(uint32 diff)
     switch (GetStatus())
     {
         case STATUS_WAIT_JOIN:
-            if (GetPlayersSize())
+            if (GetPlayersSize() && !IsReplay())
             {
                 _ProcessJoin(diff);
                 _CheckSafePositions(diff);

@@ -2137,6 +2137,14 @@ namespace
         if (!bg->GetPlayersSize())
             return false;
 
+        if (state.Match.PreStartPacketCount > 0)
+        {
+            // If the replay has pre-start packets (recorded during STATUS_WAIT_JOIN),
+            // do not automatically skip the countdown or force open the doors right away.
+            // Let the recorded packets handle the pre-start warnings, timers, and opening sequence.
+            return true;
+        }
+
         if (bg->GetStatus() == STATUS_IN_PROGRESS)
         {
             bg->StartingEventOpenDoors();
