@@ -2140,8 +2140,13 @@ namespace
         if (state.Match.PreStartPacketCount > 0)
         {
             // If the replay has pre-start packets (recorded during STATUS_WAIT_JOIN),
-            // do not automatically skip the countdown or force open the doors right away.
-            // Let the recorded packets handle the pre-start warnings, timers, and opening sequence.
+            // we do NOT automatically force open the doors or modify server-side delay time/status.
+            // But we MUST send the STATUS_IN_PROGRESS packet with queueSlot = 0 to the client
+            // to initialize the client's status slot array and prevent an out-of-bounds crash!
+            WorldPacket status;
+            uint32 queueSlot = 0;
+            sBattlegroundMgr->BuildBattlegroundStatusPacket(&status, bg, queueSlot, STATUS_IN_PROGRESS, 0, 0, bg->GetArenaType(), viewer->GetBGTeam());
+            viewer->SendDirectMessage(&status);
             return true;
         }
 
