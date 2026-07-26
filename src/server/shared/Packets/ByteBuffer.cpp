@@ -24,6 +24,7 @@
 #include <utf8.h>
 #include <sstream>
 #include <cmath>
+#include <ctime>
 
 ByteBuffer::ByteBuffer(MessageBuffer&& buffer) : _rpos(0), _wpos(0), _storage(buffer.Move())
 {
@@ -70,6 +71,21 @@ ByteBuffer& ByteBuffer::operator>>(double& value)
     if (!std::isfinite(value))
         throw ByteBufferInvalidValueException("double", "infinity");
     return *this;
+}
+
+uint32 ByteBuffer::ReadPackedTime()
+{
+    auto packedDate = read<uint32>();
+    tm lt = tm();
+
+    lt.tm_min = packedDate & 0x3F;
+    lt.tm_hour = (packedDate >> 6) & 0x1F;
+    //lt.tm_wday = (packedDate >> 11) & 7;
+    lt.tm_mday = ((packedDate >> 14) & 0x3F) + 1;
+    lt.tm_mon = (packedDate >> 20) & 0xF;
+    lt.tm_year = ((packedDate >> 24) & 0x1F) + 100;
+
+    return uint32(mktime(&lt));
 }
 
 std::string ByteBuffer::ReadCString(bool requireValidUtf8 /*= true*/)
