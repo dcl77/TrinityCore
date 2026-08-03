@@ -53,6 +53,7 @@ class instance_pit_of_saron : public InstanceMapScript
                 _teamInInstance = instance->ToInstanceMap()->GetTeamInInstance();
                 _cavernActive = 0;
                 _shardsHit = 0;
+                _introState = NOT_STARTED;
             }
 
             void OnCreatureCreate(Creature* creature) override
@@ -259,6 +260,8 @@ class instance_pit_of_saron : public InstanceMapScript
                         return _shardsHit;
                     case DATA_CAVERN_ACTIVE:
                         return _cavernActive;
+                    case DATA_INTRO_STATE:
+                        return _introState;
                     default:
                         break;
                 }
@@ -282,9 +285,29 @@ class instance_pit_of_saron : public InstanceMapScript
                         else
                             HandleCavernEventTrigger(false);
                         break;
+                    case DATA_INTRO_STATE:
+                        _introState = data;
+                        if (data == DONE)
+                            SaveToDB();
+                        break;
                     default:
                         break;
                 }
+            }
+
+            void WriteSaveDataMore(std::ostringstream& data) override
+            {
+                data << _introState;
+            }
+
+            void ReadSaveDataMore(std::istringstream& data) override
+            {
+                uint32 temp = 0;
+                data >> temp;
+                if (temp == DONE)
+                    _introState = DONE;
+                else
+                    _introState = NOT_STARTED;
             }
 
             ObjectGuid GetGuidData(uint32 type) const override
@@ -341,6 +364,7 @@ class instance_pit_of_saron : public InstanceMapScript
             uint32 _teamInInstance;
             uint8 _shardsHit;
             uint8 _cavernActive;
+            uint32 _introState;
         };
 
         InstanceScript* GetInstanceScript(InstanceMap* map) const override

@@ -41,7 +41,8 @@ enum POSDataTypes
     DATA_TYRANNUS_EVENT     = 7,
     DATA_TEAM_IN_INSTANCE   = 8,
     DATA_ICE_SHARDS_HIT     = 9,
-    DATA_CAVERN_ACTIVE      = 10
+    DATA_CAVERN_ACTIVE      = 10,
+    DATA_INTRO_STATE        = 11
 };
 
 enum POSCreatureIds
