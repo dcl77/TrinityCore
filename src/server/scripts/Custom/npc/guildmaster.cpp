@@ -1,4 +1,6 @@
 #include "Custom/Dcl.h"
+#include "GOMove.h"
+#include "Chat.h"
 
 #define MSG_GOSSIP_TELE          "Teleport to GuildHouse"
 #define MSG_GOSSIP_BUY           "Buy GuildHouse"
@@ -21,11 +23,32 @@
 #define ACTION_TELE 1001
 #define ACTION_SHOW_BUYLIST 1002 //deprecated. Use (OFFSET_SHOWBUY_FROM + 0) instead
 #define ACTION_SELL_GUILDHOUSE 1003
+#define ACTION_SHOW_OBJECT_BUYLIST 1004
+#define OFFSET_OBJECT_ID_TO_ACTION 20000
 
 #define COST_GH_BUY 10000000 //1000 g.
 #define COST_GH_SELL 5000000 //500 g.
 
 #define GOSSIP_COUNT_MAX 10
+
+struct GuildHouseGameObject
+{
+    uint32 entry;
+    std::string name;
+    uint32 cost; // in gold
+};
+
+static const std::vector<GuildHouseGameObject> purchasableGameObjects = {
+    { 184137, "Mailbox", 10 },
+    { 187293, "Guild Bank", 20 },
+    { 183317, "Portal to Stormwind", 15 },
+    { 183325, "Portal to Orgrimmar", 15 },
+    { 191167, "Portal to Dalaran", 15 },
+    { 183323, "Portal to Shattrath", 15 },
+    { 191028, "Barber Chair", 10 },
+    { 180053, "Anvil", 5 },
+    { 1685,   "Forge", 5 }
+};
 
 class guildmaster : public CreatureScript
 {
@@ -63,6 +86,66 @@ public:
             }
 
             return false;
+        }
+
+        void showObjectBuyList(Player* player, Creature* _creature)
+        {
+            for (size_t i = 0; i < purchasableGameObjects.size(); ++i)
+            {
+                std::string label = purchasableGameObjects[i].name + " (" + std::to_string(purchasableGameObjects[i].cost) + " Gold)";
+                AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, label, GOSSIP_SENDER_MAIN, OFFSET_OBJECT_ID_TO_ACTION + i);
+            }
+
+            SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
+        }
+
+        void buyGameObject(Player* player, Creature* _creature, uint32 index)
+        {
+            if (index >= purchasableGameObjects.size())
+                return;
+
+            const GuildHouseGameObject& ghGo = purchasableGameObjects[index];
+
+            if (player->GetMoney() < ghGo.cost * 10000)
+            {
+                _creature->Whisper("You do not have enough gold to purchase this object.", LANG_UNIVERSAL, player);
+                return;
+            }
+
+            float x, y, z;
+            uint32 mapId;
+            if (getGuildHouseCoords(player->GetGuildId(), x, y, z, mapId))
+            {
+                if (player->GetMapId() != mapId)
+                {
+                    _creature->Whisper("You must be inside your GuildHouse to purchase GameObjects.", LANG_UNIVERSAL, player);
+                    return;
+                }
+
+                float spawnX = player->GetPositionX();
+                float spawnY = player->GetPositionY();
+                float spawnZ = player->GetPositionZ();
+                float spawnO = player->GetOrientation();
+
+                GameObject* go = GOMove::SpawnGameObject(player, spawnX, spawnY, spawnZ, spawnO, player->GetPhaseMaskForSpawn(), ghGo.entry);
+                if (go)
+                {
+                    uint32 goLowguid = go->GetSpawnId();
+                    ZynDatabase.PQuery("INSERT INTO `guildhouse_gameobjects` (`guildId`, `gameobject_guid`) VALUES ({}, {})",
+                        player->GetGuildId(), goLowguid);
+
+                    player->ModifyMoney(-(int32)(ghGo.cost * 10000));
+                    _creature->Whisper("GameObject successfully added to your GuildHouse!", LANG_UNIVERSAL, player);
+                }
+                else
+                {
+                    _creature->Whisper("Failed to spawn the GameObject. Please try again.", LANG_UNIVERSAL, player);
+                }
+            }
+            else
+            {
+                _creature->Whisper("Failed to locate your GuildHouse.", LANG_UNIVERSAL, player);
+            }
         }
 
         void teleportPlayerToGuildHouse(Player* player, Creature* _creature)
@@ -125,7 +208,7 @@ public:
                         guildhouseId + OFFSET_SHOWBUY_FROM);
                 }
 
-                SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, me->GetGUID());
+                SendGossipMenuFor(player, DEFAULT_GOSSIP_MESSAGE, _creature->GetGUID());
 
                 return true;
             }
@@ -224,6 +307,26 @@ public:
         {
             if (isPlayerHasGuildhouse(player, _creature))
             {
+                // Delete purchased GameObjects
+                QueryResult goResult = ZynDatabase.PQuery("SELECT `gameobject_guid` FROM `guildhouse_gameobjects` WHERE `guildId` = {}", player->GetGuildId());
+                if (goResult)
+                {
+                    do
+                    {
+                        Field* fields = goResult->Fetch();
+                        uint32 goLowguid = fields[0].GetUInt32();
+
+                        GameObject* go = ChatHandler(player->GetSession()).GetObjectFromPlayerMapByDbGuid(goLowguid);
+                        if (go)
+                        {
+                            go->Delete();
+                        }
+                        GameObject::DeleteFromDB(goLowguid);
+                    } while (goResult->NextRow());
+
+                    ZynDatabase.PQuery("DELETE FROM `guildhouse_gameobjects` WHERE `guildId` = {}", player->GetGuildId());
+                }
+
                 QueryResult result;
                 result = ZynDatabase.PQuery("UPDATE `guildhouses` SET `guildId` = 0 WHERE `guildId` = {}",
                     player->GetGuildId());
@@ -265,12 +368,20 @@ public:
                 //show list of GHs which currently not occupied
                 showBuyList(player, me);
                 break;
+            case ACTION_SHOW_OBJECT_BUYLIST:
+                showObjectBuyList(player, me);
+                break;
             case ACTION_SELL_GUILDHOUSE:
                 sellGuildhouse(player, me);
                 CloseGossipMenuFor(player);
                 break;
             default:
-                if (action > OFFSET_SHOWBUY_FROM)
+                if (action >= OFFSET_OBJECT_ID_TO_ACTION)
+                {
+                    buyGameObject(player, me, action - OFFSET_OBJECT_ID_TO_ACTION);
+                    CloseGossipMenuFor(player);
+                }
+                else if (action > OFFSET_SHOWBUY_FROM)
                 {
                     showBuyList(player, me, action - OFFSET_SHOWBUY_FROM);
                 }
@@ -297,9 +408,8 @@ public:
             {
                 if (isPlayerHasGuildhouse(player, me))
                 {
-                    //and additional for guildhouse owner (Removed :
+                    AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, "Add GameObjects to GuildHouse", GOSSIP_SENDER_MAIN, ACTION_SHOW_OBJECT_BUYLIST);
                     AddGossipItemFor(player, GOSSIP_ICON_MONEY_BAG, MSG_GOSSIP_SELL, GOSSIP_SENDER_MAIN, ACTION_SELL_GUILDHOUSE, MSG_SELL_CONFIRM, 0, false);
-
                 }
                 else
                 {
@@ -322,5 +432,11 @@ public:
 
 void AddSC_guildmaster()
 {
+    ZynDatabase.DirectExecute("CREATE TABLE IF NOT EXISTS `guildhouse_gameobjects` ("
+                              "`id` INT UNSIGNED NOT NULL AUTO_INCREMENT,"
+                              "`guildId` BIGINT NOT NULL,"
+                              "`gameobject_guid` INT UNSIGNED NOT NULL,"
+                              "PRIMARY KEY (`id`)"
+                              ") ENGINE=InnoDB DEFAULT CHARSET=utf8 ROW_FORMAT=DYNAMIC;");
     new guildmaster();
 }
