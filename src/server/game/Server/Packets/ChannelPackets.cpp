@@ -19,6 +19,7 @@
 #include "Channel.h"
 #include "Errors.h"
 
+<<<<<<< HEAD
 WorldPackets::Channel::ChannelListRequest::ChannelListRequest(WorldPacket&& packet) : ClientPacket(std::move(packet))
 {
     ASSERT(GetOpcode() == CMSG_CHANNEL_LIST || GetOpcode() == CMSG_CHANNEL_DISPLAY_LIST);
@@ -29,6 +30,8 @@ void WorldPackets::Channel::ChannelListRequest::Read()
     _worldPacket >> ChannelName;
 }
 
+=======
+>>>>>>> upstream/3.3.5
 WorldPacket const* WorldPackets::Channel::ChannelListResponse::Write()
 {
     _worldPacket << uint8(Display);
@@ -100,6 +103,68 @@ WorldPacket const* WorldPackets::Channel::ChannelNotify::Write()
     return &_worldPacket;
 }
 
+<<<<<<< HEAD
+=======
+WorldPackets::Channel::ChannelCommand::ChannelCommand(WorldPacket&& packet) : ClientPacket(std::move(packet))
+{
+    switch (packet.GetOpcode())
+    {
+        case CMSG_CHANNEL_ANNOUNCEMENTS:
+        case CMSG_DECLINE_CHANNEL_INVITE:
+        case CMSG_CHANNEL_DISPLAY_LIST:
+        case CMSG_CHANNEL_LIST:
+        case CMSG_CHANNEL_OWNER:
+        case CMSG_GET_CHANNEL_MEMBER_COUNT:
+        case CMSG_CHANNEL_VOICE_ON:
+        case CMSG_CHANNEL_VOICE_OFF:
+        case CMSG_SET_CHANNEL_WATCH:
+            break;
+        default:
+            ABORT();
+            break;
+    }
+}
+
+void WorldPackets::Channel::ChannelCommand::Read()
+{
+    _worldPacket >> ChannelName;
+}
+
+WorldPackets::Channel::ChannelPlayerCommand::ChannelPlayerCommand(WorldPacket&& packet) : ClientPacket(std::move(packet))
+{
+    switch (GetOpcode())
+    {
+        case CMSG_CHANNEL_BAN:
+        case CMSG_CHANNEL_INVITE:
+        case CMSG_CHANNEL_KICK:
+        case CMSG_CHANNEL_MODERATOR:
+        case CMSG_CHANNEL_MUTE:
+        case CMSG_CHANNEL_SET_OWNER:
+        case CMSG_CHANNEL_SILENCE_ALL:
+        case CMSG_CHANNEL_UNBAN:
+        case CMSG_CHANNEL_UNMODERATOR:
+        case CMSG_CHANNEL_UNMUTE:
+        case CMSG_CHANNEL_UNSILENCE_ALL:
+            break;
+        default:
+            ABORT();
+            break;
+    }
+}
+
+void WorldPackets::Channel::ChannelPlayerCommand::Read()
+{
+    _worldPacket >> ChannelName;
+    _worldPacket >> Name;
+}
+
+void WorldPackets::Channel::ChannelPassword::Read()
+{
+    _worldPacket >> ChannelName;
+    _worldPacket >> Password;
+}
+
+>>>>>>> upstream/3.3.5
 void WorldPackets::Channel::JoinChannel::Read()
 {
     _worldPacket >> ChatChannelId;
@@ -114,3 +179,15 @@ void WorldPackets::Channel::LeaveChannel::Read()
     _worldPacket >> ZoneChannelID;
     _worldPacket >> ChannelName;
 }
+<<<<<<< HEAD
+=======
+
+WorldPacket const* WorldPackets::Channel::ChannelMemberCount::Write()
+{
+    _worldPacket << ChannelName;
+    _worldPacket << uint8(_ChannelFlags);
+    _worldPacket << uint32(MemberCount);
+
+    return &_worldPacket;
+}
+>>>>>>> upstream/3.3.5

@@ -131,7 +131,11 @@ enum BG_AB_Timers
 enum BG_AB_Score
 {
     BG_AB_WARNING_NEAR_VICTORY_SCORE    = 1440,
+<<<<<<< HEAD
     //BG_AB_MAX_TEAM_SCORE                = 1600
+=======
+    BG_AB_MAX_TEAM_SCORE                = 1600
+>>>>>>> upstream/3.3.5
 };
 
 /* do NOT change the order, else wrong behaviour */
@@ -288,10 +292,10 @@ struct BattlegroundABScore final : public BattlegroundScore
             }
         }
 
-        void BuildObjectivesBlock(WorldPacket& data) final override;
+        void BuildObjectivesBlock(WorldPackets::Battleground::PVPLogData_Player& playerData) override;
 
-        uint32 GetAttr1() const final override { return BasesAssaulted; }
-        uint32 GetAttr2() const final override { return BasesDefended; }
+        uint32 GetAttr1() const override { return BasesAssaulted; }
+        uint32 GetAttr2() const override { return BasesDefended; }
 
         uint32 BasesAssaulted;
         uint32 BasesDefended;

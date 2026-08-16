@@ -812,10 +812,25 @@ void Channel::SilenceAll(Player const* /*player*/, std::string const& /*name*/)
 {
 }
 
+<<<<<<< HEAD
 void Channel::UnsilenceAll(Player const* /*player*/, std::string const& /*name*/)
 {
 }
 
+=======
+void Channel::SilenceVoice(Player const* /*player*/, std::string const& /*name*/)
+{
+}
+
+void Channel::UnsilenceAll(Player const* /*player*/, std::string const& /*name*/)
+{
+}
+
+void Channel::UnsilenceVoice(Player const* /*player*/, std::string const& /*name*/)
+{
+}
+
+>>>>>>> upstream/3.3.5
 void Channel::DeclineInvite(Player const* /*player*/)
 {
 }
@@ -859,6 +874,26 @@ void Channel::LeaveNotify(ObjectGuid const& guid) const
         SendToAll(builder);
 }
 
+<<<<<<< HEAD
+=======
+void Channel::SendMemberCount(Player const* player) const
+{
+    WorldPackets::Channel::ChannelMemberCount channelMemberCount;
+    channelMemberCount.ChannelName = GetName(player->GetSession()->GetSessionDbcLocale());
+    channelMemberCount._ChannelFlags = GetFlags();
+    channelMemberCount.MemberCount = GetNumPlayers();
+    player->SendDirectMessage(channelMemberCount.Write());
+}
+
+void Channel::VoiceOn(Player const* /*player*/)
+{
+}
+
+void Channel::VoiceOff(Player const* /*player*/)
+{
+}
+
+>>>>>>> upstream/3.3.5
 template <class Builder>
 void Channel::SendToAll(Builder& builder, ObjectGuid const& guid) const
 {

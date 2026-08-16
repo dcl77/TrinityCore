@@ -106,6 +106,37 @@ WorldPacket const* WorldPackets::Misc::TutorialFlags::Write()
 void WorldPackets::Misc::TutorialSetFlag::Read()
 {
     _worldPacket >> TutorialBit;
+<<<<<<< HEAD
+=======
+}
+
+void WorldPackets::Misc::SetDungeonDifficulty::Read()
+{
+    _worldPacket >> DifficultyID;
+}
+
+void WorldPackets::Misc::SetRaidDifficulty::Read()
+{
+    _worldPacket >> DifficultyID;
+}
+
+WorldPacket const* WorldPackets::Misc::DungeonDifficultySet::Write()
+{
+    _worldPacket << int32(DifficultyID);
+    _worldPacket << int32(ChangeCurrentDifficulyID);
+    _worldPacket << int32(ChangeGroupDifficulyID);
+
+    return &_worldPacket;
+}
+
+WorldPacket const* WorldPackets::Misc::RaidDifficultySet::Write()
+{
+    _worldPacket << int32(DifficultyID);
+    _worldPacket << int32(ChangeCurrentDifficulyID);
+    _worldPacket << int32(ChangeGroupDifficulyID);
+
+    return &_worldPacket;
+>>>>>>> upstream/3.3.5
 }
 
 WorldPacket const* WorldPackets::Misc::CorpseReclaimDelay::Write()

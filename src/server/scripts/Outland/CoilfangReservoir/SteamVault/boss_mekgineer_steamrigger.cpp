@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+<<<<<<< HEAD
 /* Timers requires update */
 
 #include "ScriptMgr.h"
@@ -22,7 +23,20 @@
 #include "SpellScript.h"
 #include "InstanceScript.h"
 #include "MotionMaster.h"
+=======
+/*
+ * Timers requires to be revisited
+ */
+
+#include "ScriptMgr.h"
+#include "InstanceScript.h"
+#include "MotionMaster.h"
+#include "ScriptedCreature.h"
+#include "SpellScript.h"
+#include "SpellInfo.h"
+>>>>>>> upstream/3.3.5
 #include "steam_vault.h"
+#include "TemporarySummon.h"
 
 enum SteamriggerTexts
 {
@@ -49,7 +63,11 @@ enum SteamriggerSpells
 
 enum SteamriggerEvents
 {
+<<<<<<< HEAD
     EVENT_SHRINK                = 1,
+=======
+    EVENT_SUPER_SHRINK_RAY      = 1,
+>>>>>>> upstream/3.3.5
     EVENT_SAW_BLADE,
     EVENT_ELECTRIFIED_NET,
     EVENT_SUMMON,
@@ -82,6 +100,7 @@ struct boss_mekgineer_steamrigger : public BossAI
 
     void JustEngagedWith(Unit* who) override
     {
+<<<<<<< HEAD
         Talk(SAY_AGGRO);
         BossAI::JustEngagedWith(who);
         events.ScheduleEvent(EVENT_SHRINK, 20s);
@@ -146,14 +165,94 @@ struct boss_mekgineer_steamrigger : public BossAI
                     if (Unit* target = SelectTarget(SelectTargetMethod::Random, 1))
                         DoCast(target, SPELL_SAW_BLADE);
                     events.Repeat(10s, 20s);
+=======
+        BossAI::JustEngagedWith(who);
+
+        Talk(SAY_AGGRO);
+
+        events.ScheduleEvent(EVENT_SUPER_SHRINK_RAY, 20s, 30s);
+        events.ScheduleEvent(EVENT_SAW_BLADE, 5s, 20s);
+        events.ScheduleEvent(EVENT_ELECTRIFIED_NET, 10s, 20s);
+        if (IsHeroic())
+            events.ScheduleEvent(EVENT_SUMMON_H, 15s, 20s);
+    }
+
+    // Do not despawn mechanics
+    void JustSummoned(Creature* /*summon*/) override { }
+
+    void DamageTaken(Unit* /*killer*/, uint32& damage, DamageEffectType /*damageType*/, SpellInfo const* /*spellInfo = nullptr*/) override
+    {
+        if (_phase < PHASE_HEALTH_75 && !IsHeroic() && me->HealthBelowPctDamaged(75, damage))
+        {
+            _phase++;
+            events.ScheduleEvent(EVENT_SUMMON, 0s);
+        }
+        if (_phase < PHASE_HEALTH_50 && !IsHeroic() && me->HealthBelowPctDamaged(50, damage))
+        {
+            _phase++;
+            events.ScheduleEvent(EVENT_SUMMON, 0s);
+        }
+        if (_phase < PHASE_HEALTH_25 && !IsHeroic() && me->HealthBelowPctDamaged(25, damage))
+        {
+            _phase++;
+            events.ScheduleEvent(EVENT_SUMMON, 0s);
+        }
+    }
+
+    void OnSpellCast(SpellInfo const* spellInfo) override
+    {
+        if (spellInfo->Id == SPELL_SUMMON_GNOMES)
+            Talk(SAY_MECHANICS);
+    }
+
+    void KilledUnit(Unit* /*victim*/) override
+    {
+        Talk(SAY_SLAY);
+    }
+
+    void JustDied(Unit* /*killer*/) override
+    {
+        _JustDied();
+        Talk(SAY_DEATH);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_SUPER_SHRINK_RAY:
+                    DoCastSelf(SPELL_SUPER_SHRINK_RAY);
+                    events.Repeat(35s, 50s);
+                    break;
+                case EVENT_SAW_BLADE:
+                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 100.0f, true))
+                        DoCast(target, SPELL_SAW_BLADE);
+                    events.Repeat(8s, 15s);
+>>>>>>> upstream/3.3.5
                     break;
                 case EVENT_ELECTRIFIED_NET:
                     if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0))
                         DoCast(target, SPELL_ELECTRIFIED_NET);
+<<<<<<< HEAD
                     events.Repeat(15s, 25s);
                     break;
                 case EVENT_SUMMON:
                     Talk(SAY_MECHANICS);
+=======
+                    events.Repeat(20s, 30s);
+                    break;
+                case EVENT_SUMMON:
+>>>>>>> upstream/3.3.5
                     DoCastSelf(SPELL_SUMMON_GNOMES);
                     break;
                 case EVENT_SUMMON_H:
@@ -178,13 +277,29 @@ private:
 // 17951 - Steamrigger Mechanic
 struct npc_steamrigger_mechanic : public ScriptedAI
 {
+<<<<<<< HEAD
     npc_steamrigger_mechanic(Creature* creature) : ScriptedAI(creature) { }
+=======
+    using ScriptedAI::ScriptedAI;
+
+    void InitializeAI() override
+    {
+        if (me->IsSummon())
+        {
+            me->SetCorpseDelay(5, true);
+            me->SetReactState(REACT_DEFENSIVE);
+        }
+
+        ScriptedAI::InitializeAI();
+    }
+>>>>>>> upstream/3.3.5
 
     void Reset() override
     {
         _scheduler.CancelAll();
     }
 
+<<<<<<< HEAD
     void IsSummonedBy(WorldObject* ownerWO) override
     {
         me->SetReactState(REACT_DEFENSIVE);
@@ -196,6 +311,20 @@ struct npc_steamrigger_mechanic : public ScriptedAI
         float x, y, z;
         owner->GetContactPoint(me, x, y, z);
         me->GetMotionMaster()->MovePoint(POINT_REPAIR, x, y, z);
+=======
+    void JustAppeared() override
+    {
+        if (TempSummon* summon = me->ToTempSummon())
+        {
+            Unit* summoner = summon->GetSummonerUnit();
+            if (summoner && summoner->IsCreature())
+            {
+                float x, y, z;
+                summoner->GetContactPoint(me, x, y, z);
+                me->GetMotionMaster()->MovePoint(POINT_REPAIR, x, y, z);
+            }
+        }
+>>>>>>> upstream/3.3.5
     }
 
     void MovementInform(uint32 type, uint32 pointId) override
@@ -209,6 +338,7 @@ struct npc_steamrigger_mechanic : public ScriptedAI
 
     void JustEngagedWith(Unit* /*who*/) override
     {
+<<<<<<< HEAD
         _scheduler.Schedule(5s, 10s, [this](TaskContext task)
         {
             DoCastSelf(SPELL_DISPEL_MAGIC);
@@ -220,6 +350,19 @@ struct npc_steamrigger_mechanic : public ScriptedAI
             DoCastSelf(SPELL_REPAIR);
             task.Repeat(5s);
         });
+=======
+        _scheduler
+            .Schedule(5s, 10s, [this](TaskContext task)
+            {
+                DoCastSelf(SPELL_DISPEL_MAGIC);
+                task.Repeat(5s, 10s);
+            })
+            .Schedule(5s, 15s, [this](TaskContext task)
+            {
+                DoCastSelf(SPELL_REPAIR);
+                task.Repeat(5s, 10s);
+            });
+>>>>>>> upstream/3.3.5
     }
 
     void UpdateAI(uint32 diff) override
@@ -241,22 +384,39 @@ class spell_mekgineer_steamrigger_summon_gnomes : public AuraScript
 {
     PrepareAuraScript(spell_mekgineer_steamrigger_summon_gnomes);
 
+<<<<<<< HEAD
     bool Validate(SpellInfo const* /*spell*/) override
+=======
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+>>>>>>> upstream/3.3.5
     {
         return ValidateSpellInfo({ SPELL_SUMMON_GNOME_1, SPELL_SUMMON_GNOME_2, SPELL_SUMMON_GNOME_3 });
     }
 
+<<<<<<< HEAD
     void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
     {
         Unit* target = GetTarget();
         target->CastSpell(target, SPELL_SUMMON_GNOME_1, true);
         target->CastSpell(target, SPELL_SUMMON_GNOME_2, true);
         target->CastSpell(target, SPELL_SUMMON_GNOME_3, true);
+=======
+    void OnPeriodic(AuraEffect const* /*aurEff*/)
+    {
+        Unit* target = GetTarget();
+        target->CastSpell(nullptr, SPELL_SUMMON_GNOME_1, true);
+        target->CastSpell(nullptr, SPELL_SUMMON_GNOME_2, true);
+        target->CastSpell(nullptr, SPELL_SUMMON_GNOME_3, true);
+>>>>>>> upstream/3.3.5
     }
 
     void Register() override
     {
+<<<<<<< HEAD
         AfterEffectRemove += AuraEffectRemoveFn(spell_mekgineer_steamrigger_summon_gnomes::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+=======
+        OnEffectPeriodic += AuraEffectPeriodicFn(spell_mekgineer_steamrigger_summon_gnomes::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+>>>>>>> upstream/3.3.5
     }
 };
 

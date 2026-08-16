@@ -149,6 +149,7 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage& chat
 {
     HandleChatMessage(chatMessage.SlashCmd, chatMessage.Language, std::move(chatMessage.Text), std::move(chatMessage.Target));
 }
+<<<<<<< HEAD
 
     /*  if (sWorld->getBoolConfig(BATTLEGROUND_CROSSFACTION_ENABLED) && lang != LANG_ADDON)
       {
@@ -161,6 +162,8 @@ void WorldSession::HandleChatMessageOpcode(WorldPackets::Chat::ChatMessage& chat
               break;
           }
       }*/
+=======
+>>>>>>> upstream/3.3.5
 
 void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string msg, std::string target)
 {
@@ -247,6 +250,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
         // LANG_ADDON is only valid for the following message types
         switch (type)
         {
+<<<<<<< HEAD
         case CHAT_MSG_PARTY:
         case CHAT_MSG_RAID:
         case CHAT_MSG_GUILD:
@@ -254,6 +258,20 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
         case CHAT_MSG_WHISPER:
             // check if addon messages are disabled
             if (!sWorld->getBoolConfig(CONFIG_ADDON_CHANNEL))
+=======
+            case CHAT_MSG_PARTY:
+            case CHAT_MSG_RAID:
+            case CHAT_MSG_GUILD:
+            case CHAT_MSG_BATTLEGROUND:
+            case CHAT_MSG_WHISPER:
+                // check if addon messages are disabled
+                if (!sWorld->getBoolConfig(CONFIG_ADDON_CHANNEL))
+                    return;
+                break;
+            default:
+                TC_LOG_ERROR("network", "Player {} {} sent a chatmessage with an invalid language/message type combination",
+                    GetPlayer()->GetName(), GetPlayer()->GetGUID().ToString());
+>>>>>>> upstream/3.3.5
                 return;
             break;
         default:
@@ -575,6 +593,7 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
                 return;
             }
         }
+<<<<<<< HEAD
 
         if (GetPlayer()->HasAura(GM_SILENCE_AURA) && !receiver->IsGameMaster())
         {
@@ -771,6 +790,20 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
             if (sender->GetLevel() < sWorld->getIntConfig(CONFIG_CHAT_CHANNEL_LEVEL_REQ))
             {
                 SendNotification(GetTrinityString(LANG_CHANNEL_REQ), sWorld->getIntConfig(CONFIG_CHAT_CHANNEL_LEVEL_REQ));
+=======
+        case CHAT_MSG_WHISPER:
+        {
+            if (!normalizePlayerName(target))
+            {
+                SendPlayerNotFoundNotice(target);
+                break;
+            }
+
+            Player* receiver = ObjectAccessor::FindConnectedPlayerByName(target);
+            if (!receiver || (lang != LANG_ADDON && !receiver->isAcceptWhispers() && receiver->GetSession()->HasPermission(rbac::RBAC_PERM_CAN_FILTER_WHISPERS) && !receiver->IsInWhisperWhiteList(sender->GetGUID())))
+            {
+                SendPlayerNotFoundNotice(target);
+>>>>>>> upstream/3.3.5
                 return;
             }
         }
@@ -790,7 +823,11 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
                 }
             }
 
+<<<<<<< HEAD
             if (!duplicatedMessage)
+=======
+            if (GetPlayer()->HasAura(GM_SILENCE_AURA) && !receiver->IsGameMaster())
+>>>>>>> upstream/3.3.5
             {
                 sScriptMgr->OnPlayerChat(_player, type, lang, msg, chn);
 #ifdef ELUNA
@@ -817,7 +854,181 @@ void WorldSession::HandleChatMessage(ChatMsg type, Language lang, std::string ms
     {
         if (!sender->IsInCombat())
         {
+<<<<<<< HEAD
             if (sender->isAFK())                       // Already AFK
+=======
+            // if player is in battleground, he cannot say to battleground members by /p
+            Group* group = GetPlayer()->GetOriginalGroup();
+            if (!group)
+            {
+                group = sender->GetGroup();
+                if (!group || group->isBGGroup())
+                    return;
+            }
+
+            // control LEADER messages on the server
+            // in a scenario where player has both Group and OriginalGroup,
+            // client will incorrectly send LEADER type when sending message to OriginalGroup while being a leader in regular group
+            type = group->IsLeader(sender->GetGUID()) ? CHAT_MSG_PARTY_LEADER : CHAT_MSG_PARTY;
+
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
+
+            WorldPackets::Chat::Chat packet;
+            packet.Initialize(ChatMsg(type), Language(lang), sender, nullptr, msg);
+            group->BroadcastPacket(packet.Write(), false, group->GetMemberGroup(GetPlayer()->GetGUID()));
+            break;
+        }
+        case CHAT_MSG_GUILD:
+        {
+            if (GetPlayer()->GetGuildId())
+            {
+                if (Guild* guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
+                {
+                    sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
+
+                    guild->BroadcastToGuild(this, false, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
+                }
+            }
+            break;
+        }
+        case CHAT_MSG_OFFICER:
+        {
+            if (GetPlayer()->GetGuildId())
+            {
+                if (Guild* guild = sGuildMgr->GetGuildById(GetPlayer()->GetGuildId()))
+                {
+                    sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, guild);
+
+                    guild->BroadcastToGuild(this, true, msg, lang == LANG_ADDON ? LANG_ADDON : LANG_UNIVERSAL);
+                }
+            }
+            break;
+        }
+        case CHAT_MSG_RAID:
+        {
+            // if player is in battleground, he cannot say to battleground members by /ra
+            Group* group = GetPlayer()->GetOriginalGroup();
+            if (!group)
+            {
+                group = GetPlayer()->GetGroup();
+                if (!group || group->isBGGroup() || !group->isRaidGroup())
+                    return;
+            }
+
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
+
+            WorldPackets::Chat::Chat packet;
+            packet.Initialize(CHAT_MSG_RAID, Language(lang), sender, nullptr, msg);
+            group->BroadcastPacket(packet.Write(), false);
+            break;
+        }
+        case CHAT_MSG_RAID_LEADER:
+        {
+            // if player is in battleground, he cannot say to battleground members by /ra
+            Group* group = GetPlayer()->GetOriginalGroup();
+            if (!group)
+            {
+                group = GetPlayer()->GetGroup();
+                if (!group || group->isBGGroup() || !group->isRaidGroup() || !group->IsLeader(sender->GetGUID()))
+                    return;
+            }
+
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
+
+            WorldPackets::Chat::Chat packet;
+            packet.Initialize(CHAT_MSG_RAID_LEADER, Language(lang), sender, nullptr, msg);
+            group->BroadcastPacket(packet.Write(), false);
+            break;
+        }
+        case CHAT_MSG_RAID_WARNING:
+        {
+            Group* group = GetPlayer()->GetGroup();
+            if (!group || !(group->isRaidGroup() || sWorld->getBoolConfig(CONFIG_CHAT_PARTY_RAID_WARNINGS)) || !(group->IsLeader(GetPlayer()->GetGUID()) || group->IsAssistant(GetPlayer()->GetGUID())) || group->isBGGroup())
+                return;
+
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
+
+            WorldPackets::Chat::Chat packet;
+            //in battleground, raid warning is sent only to players in battleground - code is ok
+            packet.Initialize(CHAT_MSG_RAID_WARNING, Language(lang), sender, nullptr, msg);
+            group->BroadcastPacket(packet.Write(), false);
+            break;
+        }
+        case CHAT_MSG_BATTLEGROUND:
+        {
+            //battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
+            Group* group = GetPlayer()->GetGroup();
+            if (!group || !group->isBGGroup())
+                return;
+
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
+
+            WorldPackets::Chat::Chat packet;
+            packet.Initialize(CHAT_MSG_BATTLEGROUND, Language(lang), sender, nullptr, msg);
+            group->BroadcastPacket(packet.Write(), false);
+            break;
+        }
+        case CHAT_MSG_BATTLEGROUND_LEADER:
+        {
+            // battleground raid is always in Player->GetGroup(), never in GetOriginalGroup()
+            Group* group = GetPlayer()->GetGroup();
+            if (!group || !group->isBGGroup() || !group->IsLeader(GetPlayer()->GetGUID()))
+                return;
+
+            sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
+
+            WorldPackets::Chat::Chat packet;
+            packet.Initialize(CHAT_MSG_BATTLEGROUND_LEADER, Language(lang), sender, nullptr, msg);;
+            group->BroadcastPacket(packet.Write(), false);
+            break;
+        }
+        case CHAT_MSG_CHANNEL:
+        {
+            if (!HasPermission(rbac::RBAC_PERM_SKIP_CHECK_CHAT_CHANNEL_REQ))
+            {
+                if (sender->GetLevel() < sWorld->getIntConfig(CONFIG_CHAT_CHANNEL_LEVEL_REQ))
+                {
+                    SendNotification(GetTrinityString(LANG_CHANNEL_REQ), sWorld->getIntConfig(CONFIG_CHAT_CHANNEL_LEVEL_REQ));
+                    return;
+                }
+            }
+
+            if (Channel* chn = ChannelMgr::GetChannelForPlayerByNamePart(target, sender))
+            {
+                sScriptMgr->OnPlayerChat(sender, type, lang, msg, chn);
+                chn->Say(sender->GetGUID(), msg, lang);
+            }
+            break;
+        }
+        case CHAT_MSG_AFK:
+        {
+            if (!sender->IsInCombat())
+            {
+                if (sender->isAFK())                       // Already AFK
+                {
+                    if (msg.empty())
+                        sender->ToggleAFK();               // Remove AFK
+                    else
+                        sender->autoReplyMsg = msg;        // Update message
+                }
+                else                                        // New AFK mode
+                {
+                    sender->autoReplyMsg = msg.empty() ? GetTrinityString(LANG_PLAYER_AFK_DEFAULT) : msg;
+
+                    if (sender->isDND())
+                        sender->ToggleDND();
+
+                    sender->ToggleAFK();
+                }
+
+                sScriptMgr->OnPlayerChat(sender, type, lang, msg);
+            }
+            break;
+        }
+        case CHAT_MSG_DND:
+        {
+            if (sender->isDND())                           // Already DND
+>>>>>>> upstream/3.3.5
             {
                 if (msg.empty())
                     sender->ToggleAFK();               // Remove AFK
@@ -996,6 +1207,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData)
     WorldPackets::Chat::Chat packet;
     packet.Initialize(CHAT_MSG_IGNORED, LANG_UNIVERSAL, _player, _player, GetPlayer()->GetName());
     player->SendDirectMessage(packet.Write());
+<<<<<<< HEAD
 }
 
 void WorldSession::HandleChannelDeclineInvite(WorldPacket& recvPacket)
@@ -1008,6 +1220,8 @@ void WorldSession::HandleChannelDeclineInvite(WorldPacket& recvPacket)
 
     if (Channel* channel = ChannelMgr::GetChannelForPlayerByNamePart(channelName, GetPlayer()))
         channel->DeclineInvite(GetPlayer());
+=======
+>>>>>>> upstream/3.3.5
 }
 
 void WorldSession::SendPlayerNotFoundNotice(std::string const& name)

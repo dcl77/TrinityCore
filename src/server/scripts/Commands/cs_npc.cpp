@@ -344,7 +344,11 @@ public:
         }
 
         uint32 itemId = item->GetId();
+<<<<<<< HEAD
         if (!sObjectMgr->RemoveVendorItem(addMulti.value_or(false) ? handler->GetSession()->GetCurrentVendor() : vendor->GetEntry(), itemId))
+=======
+        if (!sObjectMgr->RemoveVendorItem(vendor->GetEntry(), itemId))
+>>>>>>> upstream/3.3.5
         {
             handler->PSendSysMessage(LANG_ITEM_NOT_IN_LIST, itemId);
             handler->SetSentErrorMessage(true);

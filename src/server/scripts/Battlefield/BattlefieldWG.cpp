@@ -26,6 +26,11 @@
 #include "Battleground.h"
 #include "Creature.h"
 #include "CreatureTextMgr.h"
+<<<<<<< HEAD
+=======
+#include "DBCStores.h"
+#include "GameObject.h"
+>>>>>>> upstream/3.3.5
 #include "GameTime.h"
 #include "Log.h"
 #include "MotionMaster.h"

@@ -85,7 +85,11 @@ char const* GitRevision::GetFullDatabase()
 
 char const* GitRevision::GetFullVersion()
 {
+<<<<<<< HEAD
     return "Ctulhunet.ru rev. " TRINITY_PRODUCTVERSION_STR
+=======
+    return "TrinityCore rev. " TRINITY_PRODUCTVERSION_STR
+>>>>>>> upstream/3.3.5
         " (" TRINITY_BUILD_HOST_SYSTEM ", " TRINITY_BUILD_PROCESSOR  ", " TRINITY_BUILD_TYPE ", " TRINITY_LINKAGE_TYPE_STR ")";
 }
 

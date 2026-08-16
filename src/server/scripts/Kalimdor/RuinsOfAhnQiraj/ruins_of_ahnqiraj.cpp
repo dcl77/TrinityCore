@@ -281,7 +281,44 @@ private:
     InstanceScript* _instance;
 };
 
+<<<<<<< HEAD
 void AddSC_ruins_of_ahnqiraj()
 {
     RegisterAQ20CreatureAI(npc_andorov);
+=======
+enum AQ20Itch
+{
+    SPELL_HIVEZARA_CATALYST        = 25187
+};
+
+// 25185 - Itch
+class spell_ruins_of_ahnqiraj_itch : public AuraScript
+{
+    PrepareAuraScript(spell_ruins_of_ahnqiraj_itch);
+
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_HIVEZARA_CATALYST });
+    }
+
+    void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+    {
+        if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+            return;
+
+        if (Unit* caster = GetCaster())
+            caster->CastSpell(GetTarget(), SPELL_HIVEZARA_CATALYST, true);
+    }
+
+    void Register() override
+    {
+        AfterEffectRemove += AuraEffectRemoveFn(spell_ruins_of_ahnqiraj_itch::AfterRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+    }
+};
+
+void AddSC_ruins_of_ahnqiraj()
+{
+    RegisterAQ20CreatureAI(npc_andorov);
+    RegisterSpellScript(spell_ruins_of_ahnqiraj_itch);
+>>>>>>> upstream/3.3.5
 }

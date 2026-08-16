@@ -293,7 +293,7 @@ void ReputationMgr::Initialize()
     {
         FactionEntry const* factionEntry = sFactionStore.LookupEntry(i);
 
-        if (factionEntry && (factionEntry->ReputationIndex >= 0))
+        if (factionEntry && factionEntry->CanHaveReputation())
         {
             FactionState newFaction;
             newFaction.ID = factionEntry->ID;
@@ -405,6 +405,7 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
             standing += itr->second.Standing + BaseRep;
         }
 
+<<<<<<< HEAD
         //Guild-Level-System (Bonus: Ruf)
         if (Guild* guild = _player->GetGuild())
         {
@@ -419,6 +420,13 @@ bool ReputationMgr::SetOneFactionReputation(FactionEntry const* factionEntry, in
         else if (standing < GetMinReputation(factionEntry))
             standing = GetMinReputation(factionEntry);
 
+=======
+        if (standing > GetMaxReputation(factionEntry))
+            standing = GetMaxReputation(factionEntry);
+        else if (standing < GetMinReputation(factionEntry))
+            standing = GetMinReputation(factionEntry);
+
+>>>>>>> upstream/3.3.5
         ReputationRank old_rank = ReputationToRank(factionEntry, itr->second.Standing + BaseRep);
         ReputationRank new_rank = ReputationToRank(factionEntry, standing);
 
@@ -463,7 +471,7 @@ void ReputationMgr::SetVisible(FactionTemplateEntry const*factionTemplateEntry)
 
 void ReputationMgr::SetVisible(FactionEntry const* factionEntry)
 {
-    if (factionEntry->ReputationIndex < 0)
+    if (!factionEntry->CanHaveReputation())
         return;
 
     FactionStateList::iterator itr = _factions.find(factionEntry->ReputationIndex);
@@ -569,7 +577,7 @@ void ReputationMgr::LoadFromDB(PreparedQueryResult result)
             Field* fields = result->Fetch();
 
             FactionEntry const* factionEntry = sFactionStore.LookupEntry(fields[0].GetUInt16());
-            if (factionEntry && (factionEntry->ReputationIndex >= 0))
+            if (factionEntry && factionEntry->CanHaveReputation())
             {
                 FactionState* faction = &_factions[factionEntry->ReputationIndex];
 

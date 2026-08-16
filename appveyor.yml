@@ -11,6 +11,7 @@ build_script:
 - cmd: >-
     git config user.email "appveyor@build.bot" && git config user.name "AppVeyor"
 
+<<<<<<< HEAD
     git submodule init
     
     git submodule update
@@ -18,6 +19,11 @@ build_script:
     md build && cd build
 
     cmake -G"Visual Studio 17 2022" -A x64 -DSCRIPTS=static -DTOOLS=False -DCMAKE_CXX_FLAGS=" /DWIN32 /D_WINDOWS /GR /EHsc" -DCMAKE_C_FLAGS="/DWIN32 /D_WINDOWS" ..
+=======
+    cmake -S . -B .\build -G"Visual Studio 17 2022" -A x64 -DSCRIPTS=dynamic -DWITH_WARNINGS_AS_ERRORS=ON -DTOOLS=ON
+
+    cd build
+>>>>>>> upstream/3.3.5
 
     "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" /nologo /m:2 /p:Configuration=RelWithDebInfo /p:Platform="X64" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" "Ctulhunet.ru.sln"
 

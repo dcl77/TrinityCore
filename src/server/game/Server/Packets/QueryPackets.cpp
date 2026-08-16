@@ -189,6 +189,17 @@ WorldPacket const* WorldPackets::Query::CorpseTransportQuery::Write()
     return &_worldPacket;
 }
 
+<<<<<<< HEAD
+=======
+WorldPacket const* WorldPackets::Query::QueryTimeResponse::Write()
+{
+    _worldPacket << uint32(CurrentTime);
+    _worldPacket << int32(TimeOutRequest);
+
+    return &_worldPacket;
+}
+
+>>>>>>> upstream/3.3.5
 void WorldPackets::Query::QueryItemSingle::Read()
 {
     _worldPacket >> ItemID;

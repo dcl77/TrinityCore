@@ -15,6 +15,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+<<<<<<< HEAD
+=======
+/*
+ * Timers requires to be revisited
+ */
+
+>>>>>>> upstream/3.3.5
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "the_slave_pens.h"
@@ -43,12 +50,16 @@ struct boss_quagmirran : public BossAI
     void JustEngagedWith(Unit* who) override
     {
         BossAI::JustEngagedWith(who);
-        events.ScheduleEvent(EVENT_ACID_SPRAY, 25s);
-        events.ScheduleEvent(EVENT_CLEAVE, 9s);
-        events.ScheduleEvent(EVENT_UPPERCUT, 20s);
-        events.ScheduleEvent(EVENT_POISON_BOLT_VOLLEY, 31s);
+
+<<<<<<< HEAD
+=======
+        events.ScheduleEvent(EVENT_ACID_SPRAY, 20s, 35s);
+        events.ScheduleEvent(EVENT_CLEAVE, 8s, 20s);
+        events.ScheduleEvent(EVENT_UPPERCUT, 20s, 35s);
+        events.ScheduleEvent(EVENT_POISON_BOLT_VOLLEY, 20s, 30s);
     }
 
+>>>>>>> upstream/3.3.5
     void UpdateAI(uint32 diff) override
     {
         if (!UpdateVictim())
@@ -64,6 +75,7 @@ struct boss_quagmirran : public BossAI
             switch (eventId)
             {
                 case EVENT_ACID_SPRAY:
+<<<<<<< HEAD
                     DoCastAOE(SPELL_ACID_SPRAY);
                     events.Repeat(20s, 25s);
                     break;
@@ -79,6 +91,23 @@ struct boss_quagmirran : public BossAI
                 case EVENT_POISON_BOLT_VOLLEY:
                     DoCastSelf(SPELL_POISON_BOLT_VOLLEY);
                     events.Repeat(24s);
+=======
+                    if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 35.0f))
+                        DoCast(target, SPELL_ACID_SPRAY);
+                    events.Repeat(40s, 50s);
+                    break;
+                case EVENT_CLEAVE:
+                    DoCastVictim(SPELL_CLEAVE);
+                    events.Repeat(20s, 25s);
+                    break;
+                case EVENT_UPPERCUT:
+                    DoCastVictim(SPELL_UPPERCUT);
+                    events.Repeat(20s, 30s);
+                    break;
+                case EVENT_POISON_BOLT_VOLLEY:
+                    DoCastSelf(SPELL_POISON_BOLT_VOLLEY);
+                    events.Repeat(20s, 35s);
+>>>>>>> upstream/3.3.5
                     break;
                 default:
                     break;

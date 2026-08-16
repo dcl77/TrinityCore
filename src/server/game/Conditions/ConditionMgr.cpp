@@ -21,6 +21,7 @@
 #include "DatabaseEnv.h"
 #include "GameEventMgr.h"
 #include "GameObject.h"
+#include "Group.h"
 #include "InstanceScript.h"
 #include "Log.h"
 #include "LootMgr.h"
@@ -128,7 +129,30 @@ ConditionMgr::ConditionTypeInfo const ConditionMgr::StaticConditionTypeData[COND
     { "Private Object",           false, false, false, false },
     { "String ID",                false, false, false,  true },
     { "Label",                    false, false, false, false },
+<<<<<<< HEAD
+=======
+    { "Group status",              true, false, false, false }
+>>>>>>> upstream/3.3.5
 };
+
+static bool MeetsGroupStatusCondition(Player const* player, GroupStatusCondition status)
+{
+    Group const* group = player->GetGroup();
+    switch (status)
+    {
+        case GroupStatusCondition::NotInGroup:
+            return group == nullptr;
+        case GroupStatusCondition::InGroup:
+            return group != nullptr;
+        case GroupStatusCondition::InGroupButNotInRaid:
+            return group && !group->isRaidGroup();
+        case GroupStatusCondition::InRaid:
+            return group && group->isRaidGroup();
+        case GroupStatusCondition::NotInGroupOrNotInRaid:
+            return !group || !group->isRaidGroup();
+    }
+    return false;
+}
 
 // Checks if object meets the condition
 // Can have CONDITION_SOURCE_TYPE_NONE && !mReferenceId if called from a special event (ie: SmartAI)
@@ -527,7 +551,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
         }
         case CONDITION_DIFFICULTY_ID:
         {
-            condMeets = object->GetMap()->GetDifficulty() == ConditionValue1;
+            condMeets = object->GetMap()->GetDifficultyID() == ConditionValue1;
             break;
         }
         case CONDITION_GAMEMASTER:
@@ -541,6 +565,7 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
             }
             break;
         }
+<<<<<<< HEAD
         case CONDITION_GUILD_LEVEL:
         {
             if (Player* player = object->ToPlayer())
@@ -548,6 +573,8 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
                     condMeets = CompareValues(static_cast<ComparisionType>(ConditionValue2), static_cast<uint32>(guild->GetLevel()), ConditionValue1);
             break;
         }
+=======
+>>>>>>> upstream/3.3.5
         case CONDITION_STRING_ID:
         {
             if (Creature const* creature = object->ToCreature())
@@ -556,6 +583,15 @@ bool Condition::Meets(ConditionSourceInfo& sourceInfo) const
                 condMeets = go->HasStringId(ConditionStringValue1);
             break;
         }
+<<<<<<< HEAD
+=======
+        case CONDITION_GROUP_STATUS:
+        {
+            if (Player const* player = object->ToPlayer())
+                condMeets = MeetsGroupStatusCondition(player, GroupStatusCondition(ConditionValue1));
+            break;
+        }
+>>>>>>> upstream/3.3.5
         default:
             condMeets = false;
             break;
@@ -752,15 +788,24 @@ uint32 Condition::GetSearcherTypeMaskForCondition() const
         case CONDITION_GAMEMASTER:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
+<<<<<<< HEAD
         case CONDITION_GUILD_LEVEL:
             mask |= GRID_MAP_TYPE_MASK_PLAYER;
             break;
+=======
+>>>>>>> upstream/3.3.5
         case CONDITION_PRIVATE_OBJECT:
             mask |= GRID_MAP_TYPE_MASK_ALL & ~GRID_MAP_TYPE_MASK_PLAYER;
             break;
         case CONDITION_STRING_ID:
             mask |= GRID_MAP_TYPE_MASK_CREATURE | GRID_MAP_TYPE_MASK_GAMEOBJECT;
             break;
+<<<<<<< HEAD
+=======
+        case CONDITION_GROUP_STATUS:
+            mask |= GRID_MAP_TYPE_MASK_PLAYER;
+            break;
+>>>>>>> upstream/3.3.5
         default:
             ABORT_MSG("Condition::GetSearcherTypeMaskForCondition - missing condition handling!");
             break;
@@ -2412,11 +2457,19 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
                 return false;
             }
             break;
+        case CONDITION_GROUP_STATUS:
+            if (cond->ConditionValue1 > uint32(GroupStatusCondition::NotInGroupOrNotInRaid))
+            {
+                TC_LOG_ERROR("sql.sql", "{} has non invalid group status condition value1 ({}), skipped.", cond->ToString(true), cond->ConditionValue1);
+                return false;
+            }
+            break;
         case CONDITION_IN_WATER:
         case CONDITION_CHARMED:
         case CONDITION_TAXI:
         case CONDITION_GAMEMASTER:
         case CONDITION_STRING_ID:
+<<<<<<< HEAD
         case CONDITION_GUILD_LEVEL:
         {
             if (cond->ConditionValue2 >= COMP_TYPE_MAX)
@@ -2428,6 +2481,8 @@ bool ConditionMgr::isConditionTypeValid(Condition* cond) const
                 TC_LOG_ERROR("sql.sql", "Guildlevel condition has useless data in value3 ({})!", cond->ConditionValue3);
             break;
         }
+=======
+>>>>>>> upstream/3.3.5
         default:
             break;
         case CONDITION_BATTLE_PET_COUNT:

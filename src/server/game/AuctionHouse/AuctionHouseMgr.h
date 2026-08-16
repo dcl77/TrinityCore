@@ -24,7 +24,142 @@
 #include <map>
 #include <memory>
 #include <unordered_map>
+<<<<<<< HEAD
 #include <vector>
+=======
+
+class Item;
+class Player;
+class WorldPacket;
+struct AuctionHouseEntry;
+
+#define MIN_AUCTION_TIME (12*HOUR)
+#define MAX_AUCTION_ITEMS 160
+#define MAX_GETALL_RETURN 55000
+
+enum AuctionResult : uint8
+{
+    ERR_AUCTION_OK                  = 0,
+    ERR_AUCTION_INVENTORY           = 1,
+    ERR_AUCTION_DATABASE_ERROR      = 2,
+    ERR_AUCTION_NOT_ENOUGHT_MONEY   = 3,
+    ERR_AUCTION_ITEM_NOT_FOUND      = 4,
+    ERR_AUCTION_HIGHER_BID          = 5,
+    ERR_AUCTION_BID_INCREMENT       = 7,
+    ERR_AUCTION_BID_OWN             = 10,
+    ERR_AUCTION_RESTRICTED_ACCOUNT  = 13
+};
+
+enum AuctionCommand : uint8
+{
+    AUCTION_SELL_ITEM   = 0,
+    AUCTION_CANCEL      = 1,
+    AUCTION_PLACE_BID   = 2
+};
+
+enum MailAuctionAnswers
+{
+    AUCTION_OUTBIDDED           = 0,
+    AUCTION_WON                 = 1,
+    AUCTION_SUCCESSFUL          = 2,
+    AUCTION_EXPIRED             = 3,
+    AUCTION_CANCELLED_TO_BIDDER = 4,
+    AUCTION_CANCELED            = 5,
+    AUCTION_SALE_PENDING        = 6
+};
+
+enum AuctionHouses
+{
+    AUCTIONHOUSE_ALLIANCE       = 2,
+    AUCTIONHOUSE_HORDE          = 6,
+    AUCTIONHOUSE_NEUTRAL        = 7
+};
+
+enum AuctionEntryFlag : uint8
+{
+    AUCTION_ENTRY_FLAG_NONE         = 0x0,
+    AUCTION_ENTRY_FLAG_GM_LOG_BUYER = 0x1  // write transaction to gm log file for buyer (optimization flag - avoids querying database for offline player permissions)
+};
+
+struct TC_GAME_API AuctionEntry
+{
+    uint32 Id;
+    uint8 houseId;
+    ObjectGuid::LowType itemGUIDLow;
+    uint32 itemEntry;
+    uint32 itemCount;
+    ObjectGuid::LowType owner;
+    uint32 startbid;                                        //maybe useless
+    uint32 bid;
+    uint32 buyout;
+    time_t expire_time;
+    ObjectGuid::LowType bidder;
+    uint32 deposit;                                         //deposit can be calculated only when creating auction
+    uint32 etime;
+    std::unordered_set<ObjectGuid> bidders;
+    AuctionHouseEntry const* auctionHouseEntry;             // in AuctionHouse.dbc
+    AuctionEntryFlag Flags;
+
+    // helpers
+    uint8 GetHouseId() const { return houseId; }
+    uint32 GetAuctionCut() const;
+    uint32 GetAuctionOutBid() const;
+    bool BuildAuctionInfo(WorldPacket & data, Item* sourceItem = nullptr) const;
+    void DeleteFromDB(CharacterDatabaseTransaction trans) const;
+    void SaveToDB(CharacterDatabaseTransaction trans) const;
+    bool LoadFromDB(Field* fields);
+    std::string BuildAuctionMailSubject(MailAuctionAnswers response) const;
+    static std::string BuildAuctionWonMailBody(ObjectGuid guid, uint32 bid, uint32 buyout);
+    static std::string BuildAuctionSoldMailBody(ObjectGuid guid, uint32 bid, uint32 buyout, uint32 deposit, uint32 consignment);
+    static std::string BuildAuctionInvoiceMailBody(ObjectGuid guid, uint32 bid, uint32 buyout, uint32 deposit, uint32 consignment, uint32 moneyDelay, uint32 eta);
+};
+
+//this class is used as auctionhouse instance
+class TC_GAME_API AuctionHouseObject
+{
+public:
+    ~AuctionHouseObject()
+    {
+        for (AuctionEntryMap::iterator itr = AuctionsMap.begin(); itr != AuctionsMap.end(); ++itr)
+            delete itr->second;
+    }
+
+    typedef std::map<uint32, AuctionEntry*> AuctionEntryMap;
+    typedef std::unordered_map<ObjectGuid, time_t> PlayerGetAllThrottleMap;
+
+    uint32 Getcount() const { return AuctionsMap.size(); }
+
+    AuctionEntryMap::iterator GetAuctionsBegin() {return AuctionsMap.begin();}
+    AuctionEntryMap::iterator GetAuctionsEnd() {return AuctionsMap.end();}
+
+    AuctionEntry* GetAuction(uint32 id) const
+    {
+        AuctionEntryMap::const_iterator itr = AuctionsMap.find(id);
+        return itr != AuctionsMap.end() ? itr->second : nullptr;
+    }
+
+    void AddAuction(AuctionEntry* auction);
+
+    bool RemoveAuction(AuctionEntry* auction);
+
+    void Update();
+
+    void BuildListBidderItems(WorldPacket& data, Player* player, uint32& count, uint32& totalcount);
+    void BuildListOwnerItems(WorldPacket& data, Player* player, uint32& count, uint32& totalcount);
+    void BuildListAuctionItems(WorldPacket& data, Player* player,
+        std::wstring const& searchedname, uint32 listfrom, uint8 levelmin, uint8 levelmax, uint8 usable,
+        uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
+        uint32& count, uint32& totalcount, bool getall = false);
+
+private:
+    AuctionEntryMap AuctionsMap;
+
+    // Map of throttled players for GetAll, and throttle expiry time
+    // Stored here, rather than player object to maintain persistence after logout
+    PlayerGetAllThrottleMap GetAllThrottleMap;
+
+};
+>>>>>>> upstream/3.3.5
 
 class TC_GAME_API AuctionHouseMgr
 {
@@ -82,8 +217,18 @@ private:
 
     AuctionHouseMap _auctionHouses;
 
+<<<<<<< HEAD
     std::map<ObjectGuid, AuctionPair> pendingAuctionMap;
     ItemMap mAitems;
+=======
+        void AddAItem(Item* item);
+        bool RemoveAItem(ObjectGuid::LowType id, bool deleteItem = false, CharacterDatabaseTransaction* trans = nullptr);
+        bool PendingAuctionAdd(Player* player, AuctionEntry* aEntry);
+        uint32 PendingAuctionCount(Player const* player) const;
+        void PendingAuctionProcess(Player* player);
+        void UpdatePendingAuctions();
+        void Update();
+>>>>>>> upstream/3.3.5
 
     SignalQueue<std::unique_ptr<AuctionMessage>> _requestQueue;
     MPSCQueue<ListAuctionResponse> _responseQueue;

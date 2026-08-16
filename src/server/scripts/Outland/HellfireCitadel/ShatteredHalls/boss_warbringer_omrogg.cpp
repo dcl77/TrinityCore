@@ -108,6 +108,7 @@ struct boss_warbringer_omrogg : public BossAI
     void JustEngagedWith(Unit* who) override
     {
         BossAI::JustEngagedWith(who);
+<<<<<<< HEAD
         events.ScheduleEvent(EVENT_FEAR, 20s, 30s);
         events.ScheduleEvent(EVENT_THUNDERCLAP, 15s, 25s);
         events.ScheduleEvent(EVENT_BEATDOWN, 25s, 30s);
@@ -188,6 +189,81 @@ struct boss_warbringer_omrogg : public BossAI
                 return;
         }
 
+=======
+
+        events.ScheduleEvent(EVENT_FEAR, 20s, 30s);
+        events.ScheduleEvent(EVENT_THUNDERCLAP, 15s, 25s);
+        events.ScheduleEvent(EVENT_BEATDOWN, 25s, 30s);
+        events.ScheduleEvent(EVENT_BURNING_MAUL, 50s, 60s);
+
+        if (Creature* leftHead = instance->GetCreature(DATA_LEFT_HEAD))
+            leftHead->AI()->DoAction(RAND(ACTION_AGGRO_1, ACTION_AGGRO_2, ACTION_AGGRO_3));
+    }
+
+    void OnSpellCast(SpellInfo const* spell) override
+    {
+        // Apparently this and all other are handled by GameEvents since this spell sends GameEvent
+        if (spell->Id == SPELL_BEATDOWN)
+            if (Creature* leftHead = instance->GetCreature(DATA_LEFT_HEAD))
+                leftHead->AI()->DoAction(RAND(ACTION_ATTACK_1, ACTION_ATTACK_2, ACTION_ATTACK_3, ACTION_ATTACK_4));
+
+        if (spell->Id == sSpellMgr->GetSpellIdForDifficulty(SPELL_BURNING_MAUL, me))
+            Talk(EMOTE_ROAR);
+    }
+
+    void KilledUnit(Unit* /*victim*/) override
+    {
+        if (Creature* leftHead = instance->GetCreature(DATA_LEFT_HEAD))
+            leftHead->AI()->DoAction(RAND(ACTION_SLAY_1, ACTION_SLAY_2));
+    }
+
+    void JustDied(Unit* /*killer*/) override
+    {
+        _JustDied();
+
+        if (Creature* leftHead = instance->GetCreature(DATA_LEFT_HEAD))
+            leftHead->AI()->DoAction(ACTION_DEATH);
+    }
+
+    void UpdateAI(uint32 diff) override
+    {
+        if (!UpdateVictim())
+            return;
+
+        events.Update(diff);
+
+        if (me->HasUnitState(UNIT_STATE_CASTING))
+            return;
+
+        while (uint32 eventId = events.ExecuteEvent())
+        {
+            switch (eventId)
+            {
+                case EVENT_FEAR:
+                    DoCastSelf(SPELL_FEAR);
+                    events.Repeat(15s, 35s);
+                    break;
+                case EVENT_THUNDERCLAP:
+                    DoCastSelf(SPELL_THUNDERCLAP);
+                    events.Repeat(15s, 30s);
+                    break;
+                case EVENT_BEATDOWN:
+                    DoCastSelf(SPELL_BEATDOWN);
+                    events.Repeat(25s, 40s);
+                    break;
+                case EVENT_BURNING_MAUL:
+                    DoCastSelf(SPELL_BURNING_MAUL);
+                    events.Repeat(60s, 70s);
+                    break;
+                default:
+                    break;
+            }
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+        }
+
+>>>>>>> upstream/3.3.5
         DoMeleeAttackIfReady();
     }
 };
@@ -401,8 +477,11 @@ private:
     InstanceScript* _instance;
 };
 
+<<<<<<< HEAD
 /// @todo: This requires additional research. Is it handled correctly? Isn't it too over-powered?
 // That's a lot of damage if all melee attacks are successful so we cast it not always for now. No ProcCategoryRecovery for both spells
+=======
+>>>>>>> upstream/3.3.5
 // 30598, 36056 - Burning Maul
 class spell_omrogg_burning_maul : public AuraScript
 {
@@ -427,8 +506,15 @@ class spell_omrogg_burning_maul : public AuraScript
 
     void OnProc(AuraEffect const* /*aurEff*/, ProcEventInfo& /*eventInfo*/)
     {
+<<<<<<< HEAD
         if (roll_chance_i(50))
             GetTarget()->CastSpell(GetTarget(), SPELL_BLAST_WAVE);
+=======
+        /// @todo: This requires additional research. Is it handled correctly? Isn't it too over-powered?
+        /// That's a lot of damage if all melee attacks are successful so we cast it not always for now. No ProcCategoryRecovery for both spells
+        if (roll_chance_i(30))
+            GetTarget()->CastSpell(nullptr, SPELL_BLAST_WAVE);
+>>>>>>> upstream/3.3.5
     }
 
     void Register() override
@@ -437,6 +523,32 @@ class spell_omrogg_burning_maul : public AuraScript
         OnEffectRemove += AuraEffectRemoveFn(spell_omrogg_burning_maul::OnRemove, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
         OnEffectProc += AuraEffectProcFn(spell_omrogg_burning_maul::OnProc, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
     }
+<<<<<<< HEAD
+=======
+};
+
+// 30618 - Beatdown
+class spell_omrogg_beatdown : public SpellScript
+{
+    PrepareSpellScript(spell_omrogg_beatdown);
+
+    void HandleAfterCast()
+    {
+        Unit* caster = GetCaster();
+        if (!caster->IsCreature())
+            return;
+
+        caster->GetThreatManager().ResetAllThreat();
+
+        if (Unit* target = caster->GetAI()->SelectTarget(SelectTargetMethod::Random, 0, 0.0f, true, true))
+            caster->GetAI()->AttackStart(target);
+    }
+
+    void Register() override
+    {
+        AfterCast += SpellCastFn(spell_omrogg_beatdown::HandleAfterCast);
+    }
+>>>>>>> upstream/3.3.5
 };
 
 void AddSC_boss_warbringer_omrogg()
@@ -444,4 +556,8 @@ void AddSC_boss_warbringer_omrogg()
     RegisterShatteredHallsCreatureAI(boss_warbringer_omrogg);
     RegisterShatteredHallsCreatureAI(npc_omrogg_heads);
     RegisterSpellScript(spell_omrogg_burning_maul);
+<<<<<<< HEAD
+=======
+    RegisterSpellScript(spell_omrogg_beatdown);
+>>>>>>> upstream/3.3.5
 }

@@ -621,7 +621,11 @@ void WorldSocket::HandleAuthSessionCallback(std::shared_ptr<AuthSession> authSes
 
     _authed = true;
     _worldSession = new WorldSession(account.Id, std::move(authSession->Account),
+<<<<<<< HEAD
         static_pointer_cast<WorldSocket>(shared_from_this()), account.Security, isPremium, account.Expansion, mutetime,
+=======
+        static_pointer_cast<WorldSocket>(shared_from_this()), account.Security, account.Expansion, mutetime,
+>>>>>>> upstream/3.3.5
         account.TimezoneOffset, account.Locale,
         account.Recruiter, account.IsRectuiter);
     _worldSession->ReadAddonsInfo(authSession->AddonInfo);

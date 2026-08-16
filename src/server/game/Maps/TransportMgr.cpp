@@ -77,7 +77,11 @@ void TransportMgr::LoadTransportTemplates()
         }
 
         if (!goInfo->moTransport.taxiPathId)
+<<<<<<< HEAD
              continue;
+=======
+            continue;
+>>>>>>> upstream/3.3.5
 
         // paths are generated per template, saves us from generating it again in case of instanced transports
         TransportTemplate& transport = _transportTemplates[entry];

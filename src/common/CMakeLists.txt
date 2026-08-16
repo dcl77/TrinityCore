@@ -22,7 +22,11 @@ if(WIN32)
     WINDOWS_DEBUGGING_SOURCES)
   list(APPEND PRIVATE_SOURCES
     ${WINDOWS_DEBUGGING_SOURCES})
+<<<<<<< HEAD
 	CollectSourceFiles(
+=======
+  CollectSourceFiles(
+>>>>>>> upstream/3.3.5
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform/Windows
     WINDOWS_PLATFORM_SOURCES)
   list(APPEND PRIVATE_SOURCES
@@ -75,6 +79,7 @@ target_link_libraries(common
     threads
     short_alloc)
 
+<<<<<<< HEAD
 
 if (ELUNA)
   target_link_libraries(common
@@ -82,6 +87,8 @@ if (ELUNA)
       lualib)
 endif()
 
+=======
+>>>>>>> upstream/3.3.5
 set_target_properties(common
   PROPERTIES
     COMPILE_WARNING_AS_ERROR ${WITH_WARNINGS_AS_ERRORS}
@@ -89,7 +96,10 @@ set_target_properties(common
     FOLDER "server")
 
 add_dependencies(common revision_data.h)
+<<<<<<< HEAD
 
+=======
+>>>>>>> upstream/3.3.5
 
 if(BUILD_SHARED_LIBS)
   if(UNIX)

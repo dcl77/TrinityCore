@@ -434,7 +434,11 @@ struct go_strange_pool : public GameObjectAI
             if (Creature* trigger = GetClosestCreatureWithEntry(me, NPC_WORLD_TRIGGER_NOT_IMMUNE_PC, 50.0f))
                 trigger->CastSpell(player, SPELL_LURKER_SPAWN_TRIGGER);
 
+<<<<<<< HEAD
             me->ActivateObject(GameObjectActions(GameObjectActions::Despawn));
+=======
+            me->ActivateObject(GameObjectActions::Despawn);
+>>>>>>> upstream/3.3.5
 
             me->GetMap()->SummonCreature(NPC_THE_LURKER_BELOW, LurkerSpawnPosition);
             if (InstanceScript* instance = me->GetInstanceScript())

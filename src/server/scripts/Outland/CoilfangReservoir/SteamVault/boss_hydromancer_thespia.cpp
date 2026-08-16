@@ -15,7 +15,13 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+<<<<<<< HEAD
 /* Timers requires update */
+=======
+/*
+ * Timers requires to be revisited
+ */
+>>>>>>> upstream/3.3.5
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
@@ -53,6 +59,7 @@ struct boss_hydromancer_thespia : public BossAI
 
     void JustEngagedWith(Unit* who) override
     {
+<<<<<<< HEAD
         Talk(SAY_AGGRO);
         BossAI::JustEngagedWith(who);
 
@@ -64,20 +71,45 @@ struct boss_hydromancer_thespia : public BossAI
     void OnSpellCast(SpellInfo const* spell) override
     {
         if (spell->Id == SPELL_LIGHTNING_CLOUD)
+=======
+        BossAI::JustEngagedWith(who);
+
+        Talk(SAY_AGGRO);
+
+        events.ScheduleEvent(EVENT_LIGHTNING_CLOUD, 5s, 15s);
+        events.ScheduleEvent(EVENT_LUNG_BURST, 10s, 20s);
+        events.ScheduleEvent(EVENT_ENVELOPING_WINDS, 10s, 20s);
+    }
+
+    void OnSpellCast(SpellInfo const* spellInfo) override
+    {
+        if (spellInfo->Id == SPELL_LIGHTNING_CLOUD)
+>>>>>>> upstream/3.3.5
             if (roll_chance_i(50))
                 Talk(SAY_CLOUD);
     }
 
+<<<<<<< HEAD
     void KilledUnit(Unit* who) override
     {
         if (who->GetTypeId() == TYPEID_PLAYER)
             Talk(SAY_SLAY);
+=======
+    void KilledUnit(Unit* /*who*/) override
+    {
+        Talk(SAY_SLAY);
+>>>>>>> upstream/3.3.5
     }
 
     void JustDied(Unit* /*killer*/) override
     {
+<<<<<<< HEAD
         Talk(SAY_DEATH);
         _JustDied();
+=======
+        _JustDied();
+        Talk(SAY_DEATH);
+>>>>>>> upstream/3.3.5
     }
 
     void ExecuteEvent(uint32 eventId) override
@@ -85,6 +117,7 @@ struct boss_hydromancer_thespia : public BossAI
         switch (eventId)
         {
             case EVENT_LIGHTNING_CLOUD:
+<<<<<<< HEAD
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 30.0f, true))
                     DoCast(target, SPELL_LIGHTNING_CLOUD);
                 events.Repeat(15s, 25s);
@@ -98,6 +131,21 @@ struct boss_hydromancer_thespia : public BossAI
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 35.0f, true))
                     DoCast(target, SPELL_ENVELOPING_WINDS);
                 events.Repeat(10s, 15s);
+=======
+                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 30.0f))
+                    DoCast(target, SPELL_LIGHTNING_CLOUD);
+                events.Repeat(20s, 35s);
+                break;
+            case EVENT_LUNG_BURST:
+                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 40.0f))
+                    DoCast(target, SPELL_LUNG_BURST);
+                events.Repeat(20s, 30s);
+                break;
+            case EVENT_ENVELOPING_WINDS:
+                if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 35.0f))
+                    DoCast(target, SPELL_ENVELOPING_WINDS);
+                events.Repeat(25s, 40s);
+>>>>>>> upstream/3.3.5
                 break;
             default:
                 break;
@@ -108,7 +156,11 @@ struct boss_hydromancer_thespia : public BossAI
 // 17917 - Coilfang Water Elemental
 struct npc_coilfang_waterelemental : public ScriptedAI
 {
+<<<<<<< HEAD
     npc_coilfang_waterelemental(Creature* creature) : ScriptedAI(creature) { }
+=======
+    using ScriptedAI::ScriptedAI;
+>>>>>>> upstream/3.3.5
 
     void Reset() override
     {

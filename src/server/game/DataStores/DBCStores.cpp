@@ -35,7 +35,7 @@
 
 typedef std::map<uint16, uint32> AreaFlagByAreaID;
 typedef std::map<uint32, uint32> AreaFlagByMapID;
-
+typedef std::map<std::pair<uint32, Difficulty>, MapDifficultyEntry const*> MapDifficultyMap;
 typedef std::tuple<int16, int8, int32> WMOAreaTableKey;
 typedef std::map<WMOAreaTableKey, WMOAreaTableEntry const*> WMOAreaInfoByTripple;
 
@@ -132,7 +132,7 @@ DBCStorage <MapEntry> sMapStore(MapEntryfmt);
 
 // DBC used only for initialization sMapDifficultyMap at startup.
 DBCStorage <MapDifficultyEntry> sMapDifficultyStore(MapDifficultyEntryfmt); // only for loading
-MapDifficultyMap sMapDifficultyMap;
+static MapDifficultyMap sMapDifficultyMap;
 
 DBCStorage <MovieEntry> sMovieStore(MovieEntryfmt);
 
@@ -277,6 +277,7 @@ void LoadDBCStores(const std::string& dataPath)
 
 #define LOAD_DBC(store, file) LoadDBC(availableDbcLocales, bad_dbc_files, store, dbcPath, file)
 
+<<<<<<< HEAD
     LOAD_DBC(sAreaTableStore, "AreaTable.dbc");
     LOAD_DBC(sAchievementCriteriaStore, "Achievement_Criteria.dbc");
     LOAD_DBC(sAreaTriggerStore, "AreaTrigger.dbc");
@@ -328,6 +329,56 @@ void LoadDBCStores(const std::string& dataPath)
     LOAD_DBC(sGtNPCManaCostScalerStore, "gtNPCManaCostScaler.dbc");
     LOAD_DBC(sGtOCTClassCombatRatingScalarStore, "gtOCTClassCombatRatingScalar.dbc");
     LOAD_DBC(sGtOCTRegenHPStore, "gtOCTRegenHP.dbc");
+=======
+    LOAD_DBC(sAreaTableStore,                     "AreaTable.dbc");
+    LOAD_DBC(sAchievementCriteriaStore,           "Achievement_Criteria.dbc");
+    LOAD_DBC(sAreaTriggerStore,                   "AreaTrigger.dbc");
+    LOAD_DBC(sAreaGroupStore,                     "AreaGroup.dbc");
+    LOAD_DBC(sAuctionHouseStore,                  "AuctionHouse.dbc");
+    LOAD_DBC(sBankBagSlotPricesStore,             "BankBagSlotPrices.dbc");
+    LOAD_DBC(sBannedAddOnsStore,                  "BannedAddOns.dbc");
+    LOAD_DBC(sBattlemasterListStore,              "BattlemasterList.dbc");
+    LOAD_DBC(sBarberShopStyleStore,               "BarberShopStyle.dbc");
+    LOAD_DBC(sCharacterFacialHairStylesStore,     "CharacterFacialHairStyles.dbc");
+    LOAD_DBC(sCharSectionsStore,                  "CharSections.dbc");
+    LOAD_DBC(sCharStartOutfitStore,               "CharStartOutfit.dbc");
+    LOAD_DBC(sCharTitlesStore,                    "CharTitles.dbc");
+    LOAD_DBC(sChatChannelsStore,                  "ChatChannels.dbc");
+    LOAD_DBC(sChrClassesStore,                    "ChrClasses.dbc");
+    LOAD_DBC(sChrRacesStore,                      "ChrRaces.dbc");
+    LOAD_DBC(sCinematicCameraStore,               "CinematicCamera.dbc");
+    LOAD_DBC(sCinematicSequencesStore,            "CinematicSequences.dbc");
+    LOAD_DBC(sCreatureDisplayInfoStore,           "CreatureDisplayInfo.dbc");
+    LOAD_DBC(sCreatureDisplayInfoExtraStore,      "CreatureDisplayInfoExtra.dbc");
+    LOAD_DBC(sCreatureFamilyStore,                "CreatureFamily.dbc");
+    LOAD_DBC(sCreatureModelDataStore,             "CreatureModelData.dbc");
+    LOAD_DBC(sCreatureSpellDataStore,             "CreatureSpellData.dbc");
+    LOAD_DBC(sCreatureTypeStore,                  "CreatureType.dbc");
+    LOAD_DBC(sCurrencyTypesStore,                 "CurrencyTypes.dbc");
+    LOAD_DBC(sDestructibleModelDataStore,         "DestructibleModelData.dbc");
+    LOAD_DBC(sDungeonEncounterStore,              "DungeonEncounter.dbc");
+    LOAD_DBC(sDurabilityCostsStore,               "DurabilityCosts.dbc");
+    LOAD_DBC(sDurabilityQualityStore,             "DurabilityQuality.dbc");
+    LOAD_DBC(sEmotesStore,                        "Emotes.dbc");
+    LOAD_DBC(sEmotesTextStore,                    "EmotesText.dbc");
+    LOAD_DBC(sEmotesTextSoundStore,               "EmotesTextSound.dbc");
+    LOAD_DBC(sFactionStore,                       "Faction.dbc");
+    LOAD_DBC(sFactionTemplateStore,               "FactionTemplate.dbc");
+    LOAD_DBC(sGameObjectArtKitStore,              "GameObjectArtKit.dbc");
+    LOAD_DBC(sGameObjectDisplayInfoStore,         "GameObjectDisplayInfo.dbc");
+    LOAD_DBC(sGemPropertiesStore,                 "GemProperties.dbc");
+    LOAD_DBC(sGlyphPropertiesStore,               "GlyphProperties.dbc");
+    LOAD_DBC(sGlyphSlotStore,                     "GlyphSlot.dbc");
+    LOAD_DBC(sGtBarberShopCostBaseStore,          "gtBarberShopCostBase.dbc");
+    LOAD_DBC(sGtCombatRatingsStore,               "gtCombatRatings.dbc");
+    LOAD_DBC(sGtChanceToMeleeCritBaseStore,       "gtChanceToMeleeCritBase.dbc");
+    LOAD_DBC(sGtChanceToMeleeCritStore,           "gtChanceToMeleeCrit.dbc");
+    LOAD_DBC(sGtChanceToSpellCritBaseStore,       "gtChanceToSpellCritBase.dbc");
+    LOAD_DBC(sGtChanceToSpellCritStore,           "gtChanceToSpellCrit.dbc");
+    LOAD_DBC(sGtNPCManaCostScalerStore,           "gtNPCManaCostScaler.dbc");
+    LOAD_DBC(sGtOCTClassCombatRatingScalarStore,  "gtOCTClassCombatRatingScalar.dbc");
+    LOAD_DBC(sGtOCTRegenHPStore,                  "gtOCTRegenHP.dbc");
+>>>>>>> upstream/3.3.5
     //LOAD_DBC(sGtOCTRegenMPStore,                  "gtOCTRegenMP.dbc");       -- not used currently
     LOAD_DBC(sGtRegenHPPerSptStore, "gtRegenHPPerSpt.dbc");
     LOAD_DBC(sGtRegenMPPerSptStore, "gtRegenMPPerSpt.dbc");
@@ -336,6 +387,7 @@ void LoadDBCStores(const std::string& dataPath)
     LOAD_DBC(sItemBagFamilyStore, "ItemBagFamily.dbc");
     LOAD_DBC(sItemDisplayInfoStore, "ItemDisplayInfo.dbc");
     //LOAD_DBC(sItemCondExtCostsStore,              "ItemCondExtCosts.dbc");
+<<<<<<< HEAD
     //LOAD_DBC(sItemExtendedCostStore,              "ItemExtendedCost.dbc");
     sDBCMgr->LoadItemExtendedCostStore();
     LOAD_DBC(sItemLimitCategoryStore, "ItemLimitCategory.dbc");
@@ -372,6 +424,43 @@ void LoadDBCStores(const std::string& dataPath)
     LOAD_DBC(sSpellDurationStore, "SpellDuration.dbc");
     LOAD_DBC(sSpellFocusObjectStore, "SpellFocusObject.dbc");
     // LOAD_DBC(sSpellItemEnchantmentStore,          "SpellItemEnchantment.dbc");
+=======
+    LOAD_DBC(sItemExtendedCostStore,              "ItemExtendedCost.dbc");
+    LOAD_DBC(sItemLimitCategoryStore,             "ItemLimitCategory.dbc");
+    LOAD_DBC(sItemRandomPropertiesStore,          "ItemRandomProperties.dbc");
+    LOAD_DBC(sItemRandomSuffixStore,              "ItemRandomSuffix.dbc");
+    LOAD_DBC(sItemSetStore,                       "ItemSet.dbc");
+    LOAD_DBC(sLFGDungeonStore,                    "LFGDungeons.dbc");
+    LOAD_DBC(sLFGDungeonExpansionStore,           "LFGDungeonExpansion.dbc");
+    LOAD_DBC(sLightStore,                         "Light.dbc");
+    LOAD_DBC(sLiquidTypeStore,                    "LiquidType.dbc");
+    LOAD_DBC(sLockStore,                          "Lock.dbc");
+    LOAD_DBC(sMailTemplateStore,                  "MailTemplate.dbc");
+    LOAD_DBC(sMapStore,                           "Map.dbc");
+    LOAD_DBC(sMapDifficultyStore,                 "MapDifficulty.dbc");
+    LOAD_DBC(sMovieStore,                         "Movie.dbc");
+    LOAD_DBC(sNamesProfanityStore,                "NamesProfanity.dbc");
+    LOAD_DBC(sNamesReservedStore,                 "NamesReserved.dbc");
+    LOAD_DBC(sOverrideSpellDataStore,             "OverrideSpellData.dbc");
+    LOAD_DBC(sPowerDisplayStore,                  "PowerDisplay.dbc");
+    LOAD_DBC(sPvPDifficultyStore,                 "PvpDifficulty.dbc");
+    LOAD_DBC(sQuestXPStore,                       "QuestXP.dbc");
+    LOAD_DBC(sQuestFactionRewardStore,            "QuestFactionReward.dbc");
+    LOAD_DBC(sQuestSortStore,                     "QuestSort.dbc");
+    LOAD_DBC(sRandPropPointsStore,                "RandPropPoints.dbc");
+    LOAD_DBC(sScalingStatDistributionStore,       "ScalingStatDistribution.dbc");
+    LOAD_DBC(sScalingStatValuesStore,             "ScalingStatValues.dbc");
+    LOAD_DBC(sSkillLineStore,                     "SkillLine.dbc");
+    LOAD_DBC(sSkillLineAbilityStore,              "SkillLineAbility.dbc");
+    LOAD_DBC(sSkillRaceClassInfoStore,            "SkillRaceClassInfo.dbc");
+    LOAD_DBC(sSkillTiersStore,                    "SkillTiers.dbc");
+    LOAD_DBC(sSoundEntriesStore,                  "SoundEntries.dbc");
+    LOAD_DBC(sSpellCastTimesStore,                "SpellCastTimes.dbc");
+    LOAD_DBC(sSpellCategoryStore,                 "SpellCategory.dbc");
+    LOAD_DBC(sSpellDurationStore,                 "SpellDuration.dbc");
+    LOAD_DBC(sSpellFocusObjectStore,              "SpellFocusObject.dbc");
+    LOAD_DBC(sSpellItemEnchantmentStore,          "SpellItemEnchantment.dbc");
+>>>>>>> upstream/3.3.5
     LOAD_DBC(sSpellItemEnchantmentConditionStore, "SpellItemEnchantmentCondition.dbc");
     LOAD_DBC(sSpellRadiusStore, "SpellRadius.dbc");
     LOAD_DBC(sSpellRangeStore, "SpellRange.dbc");
@@ -444,7 +533,7 @@ void LoadDBCStores(const std::string& dataPath)
 
     // fill data
     for (MapDifficultyEntry const* entry : sMapDifficultyStore)
-        sMapDifficultyMap[MAKE_PAIR32(entry->MapID, entry->Difficulty)] = MapDifficulty(entry->RaidDuration, entry->MaxPlayers, entry->Message[0] != '\0');
+        sMapDifficultyMap[{ entry->MapID, Difficulty(entry->Difficulty) }] = entry;
 
     for (NamesProfanityEntry const* namesProfanity : sNamesProfanityStore)
     {
@@ -812,16 +901,19 @@ void Map2ZoneCoordinates(float& x, float& y, uint32 zone)
     std::swap(x, y);                                         // client have map coords swapped
 }
 
-MapDifficulty const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty)
+MapDifficultyEntry const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty)
 {
-    MapDifficultyMap::const_iterator itr = sMapDifficultyMap.find(MAKE_PAIR32(mapId, difficulty));
-    return itr != sMapDifficultyMap.end() ? &itr->second : nullptr;
+    return Trinity::Containers::MapGetValuePtr(sMapDifficultyMap, { mapId, difficulty });
 }
 
+<<<<<<< HEAD
 MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty& difficulty)
+=======
+MapDifficultyEntry const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &difficulty)
+>>>>>>> upstream/3.3.5
 {
     uint32 tmpDiff = difficulty;
-    MapDifficulty const* mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff));
+    MapDifficultyEntry const* mapDiff = GetMapDifficultyData(mapId, Difficulty(tmpDiff));
     if (!mapDiff)
     {
         if (tmpDiff > RAID_DIFFICULTY_25MAN_NORMAL) // heroic, downscale to normal

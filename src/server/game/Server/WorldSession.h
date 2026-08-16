@@ -58,8 +58,8 @@ struct ItemTemplate;
 struct MovementInfo;
 struct Petition;
 struct TradeStatusInfo;
-enum AuctionAction : uint8;
-enum AuctionError : uint8;
+enum AuctionCommand : uint8;
+enum AuctionResult : uint8;
 enum InventoryResult : uint8;
 
 namespace lfg
@@ -80,6 +80,16 @@ class RBACData;
 
 namespace WorldPackets
 {
+    namespace AreaTrigger
+    {
+        class AreaTrigger;
+    }
+
+    namespace AuctionHouse
+    {
+        class AuctionHelloRequest;
+    }
+
     namespace Bank
     {
         class AutoBankItem;
@@ -87,11 +97,28 @@ namespace WorldPackets
         class BuyBankSlot;
     }
 
+<<<<<<< HEAD
     namespace Battlefield
     {
         class BattlefieldMgrEntryInviteResponse;
         class BattlefieldMgrQueueInviteResponse;
         class BattlefieldMgrExitRequest;
+=======
+    namespace Battleground
+    {
+        class AreaSpiritHealerQuery;
+        class AreaSpiritHealerQueue;
+        class HearthAndResurrect;
+        class PVPLogDataRequest;
+        class BattlemasterJoin;
+        class BattlemasterJoinArena;
+        class BattlefieldLeave;
+        class BattlefieldPort;
+        class BattlefieldListRequest;
+        class RequestBattlefieldStatus;
+        class ReportPvPPlayerAFK;
+        class BattlegroundPlayerPositionsRequest;
+>>>>>>> upstream/3.3.5
     }
 
     namespace Calendar
@@ -143,13 +170,21 @@ namespace WorldPackets
 
     namespace Channel
     {
+<<<<<<< HEAD
         class ChannelListRequest;
+=======
+        class ChannelCommand;
+        class ChannelPlayerCommand;
+        class ChannelPassword;
+>>>>>>> upstream/3.3.5
         class JoinChannel;
         class LeaveChannel;
     }
 
     namespace Chat
     {
+        class ChatMessage;
+        class CTextEmote;
         class EmoteClient;
         class CTextEmote;
         class ChatMessage;
@@ -162,6 +197,14 @@ namespace WorldPackets
         class SetSheathed;
     }
 
+<<<<<<< HEAD
+=======
+    namespace Duel
+    {
+        class DuelResponse;
+    }
+
+>>>>>>> upstream/3.3.5
     namespace EquipmentSet
     {
         class SaveEquipmentSet;
@@ -218,7 +261,15 @@ namespace WorldPackets
     namespace Item
     {
         class AutoEquipItem;
+<<<<<<< HEAD
         class DestroyItem;
+=======
+        class BuyBackItem;
+        class DestroyItem;
+        class GetItemPurchaseData;
+        class RepairItem;
+        class SellItem;
+>>>>>>> upstream/3.3.5
         class SplitItem;
         class SwapInvItem;
         class SwapItem;
@@ -228,6 +279,14 @@ namespace WorldPackets
     {
         class LFGJoin;
         class LFGLeave;
+    }
+
+    namespace Loot
+    {
+        class LootUnit;
+        class LootItem;
+        class LootRelease;
+        class LootMoney;
     }
 
     namespace Mail
@@ -250,6 +309,11 @@ namespace WorldPackets
         class TutorialSetFlag;
         class TutorialClear;
         class TutorialReset;
+<<<<<<< HEAD
+=======
+        class SetDungeonDifficulty;
+        class SetRaidDifficulty;
+>>>>>>> upstream/3.3.5
         class ReclaimCorpse;
         class RepopRequest;
         class ResurrectResponse;
@@ -299,6 +363,10 @@ namespace WorldPackets
         class QueryGameObject;
         class QueryCorpseLocationFromClient;
         class QueryCorpseTransport;
+<<<<<<< HEAD
+=======
+        class QueryTime;
+>>>>>>> upstream/3.3.5
         class QueryItemSingle;
         class QuestPOIQuery;
     }
@@ -308,6 +376,9 @@ namespace WorldPackets
         class QuestGiverStatusQuery;
         class QuestGiverStatusMultipleQuery;
         class QueryQuestInfo;
+        class QuestGiverRequestReward;
+        class QuestGiverQueryQuest;
+        class QueryQuestsCompleted;
     }
 
     namespace Spells
@@ -527,13 +598,16 @@ class TC_GAME_API WorldSession
         std::string const& GetPlayerName() const;
         std::string GetPlayerInfo() const;
 
+<<<<<<< HEAD
         uint32 GetCurrentVendor() const { return m_currentVendorEntry; }
         void SetCurrentVendor(uint32 vendorEntry) { m_currentVendorEntry = vendorEntry; }
 
+=======
+>>>>>>> upstream/3.3.5
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() const { return m_Address; }
         void SetPlayer(Player* player);
-        uint8 Expansion() const { return m_expansion; }
+        uint8 GetExpansion() const { return m_expansion; }
 
         void InitWarden(SessionKey const& k, std::string const& os);
         Warden* GetWarden() { return _warden.get(); }
@@ -586,8 +660,11 @@ class TC_GAME_API WorldSession
         void SendSpiritResurrect();
         void SendBindPoint(Creature* npc);
 
+<<<<<<< HEAD
         void SendBattleGroundList(ObjectGuid guid, BattlegroundTypeId bgTypeId = BATTLEGROUND_RB);
 
+=======
+>>>>>>> upstream/3.3.5
         void SendTradeStatus(TradeStatusInfo const& status);
         void SendUpdateTrade(bool trader_data = true);
         void SendCancelTrade(TradeStatus status);
@@ -644,8 +721,12 @@ class TC_GAME_API WorldSession
          * @param   errorCode       The resulting error code.
          * @param   bagResult       (Optional) InventoryResult.
          */
+<<<<<<< HEAD
         void SendAuctionCommandResult(uint32 auctionItemId, AuctionAction command, AuctionError errorCode, InventoryResult bagResult = InventoryResult(0));
         //void SendAuctionCommandResult(AuctionEntry const* auction, AuctionAction command, AuctionError errorCode, InventoryResult bagResult = InventoryResult(0));
+=======
+        void SendAuctionCommandResult(AuctionEntry const* auction, AuctionCommand command, AuctionResult errorCode, InventoryResult bagResult = InventoryResult(0));
+>>>>>>> upstream/3.3.5
         void SendAuctionBidderNotification(uint32 location, uint32 auctionId, ObjectGuid bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification(AuctionEntry* auction);
         void SendAuctionRemovedNotification(uint32 auctionId, uint32 itemEntry, int32 randomPropertyId);
@@ -770,13 +851,13 @@ class TC_GAME_API WorldSession
         void HandleShowingCloakOpcode(WorldPackets::Character::ShowingCloak& packet);
 
         // repair
-        void HandleRepairItemOpcode(WorldPacket& recvPacket);
+        void HandleRepairItemOpcode(WorldPackets::Item::RepairItem& packet);
 
         void HandleRepopRequest(WorldPackets::Misc::RepopRequest& packet);
-        void HandleAutostoreLootItemOpcode(WorldPacket& recvPacket);
-        void HandleLootMoneyOpcode(WorldPacket& recvPacket);
-        void HandleLootOpcode(WorldPacket& recvPacket);
-        void HandleLootReleaseOpcode(WorldPacket& recvPacket);
+        void HandleAutostoreLootItemOpcode(WorldPackets::Loot::LootItem& packet);
+        void HandleLootMoneyOpcode(WorldPackets::Loot::LootMoney& packet);
+        void HandleLootOpcode(WorldPackets::Loot::LootUnit& packet);
+        void HandleLootReleaseOpcode(WorldPackets::Loot::LootRelease& packet);
         void HandleLootMasterGiveOpcode(WorldPacket& recvPacket);
         void HandleWhoOpcode(WorldPacket& recvPacket);
         void HandleLogoutRequestOpcode(WorldPackets::Character::LogoutRequest& logoutRequest);
@@ -811,7 +892,7 @@ class TC_GAME_API WorldSession
         void HandleSetAmmoOpcode(WorldPacket& recvPacket);
         void HandleItemNameQueryOpcode(WorldPacket& recvPacket);
 
-        void HandleAreaTriggerOpcode(WorldPacket& recvPacket);
+        void HandleAreaTriggerOpcode(WorldPackets::AreaTrigger::AreaTrigger& packet);
 
         void HandleSetFactionAtWar(WorldPacket& recvData);
         void HandleSetFactionCheat(WorldPacket& recvData);
@@ -826,7 +907,11 @@ class TC_GAME_API WorldSession
         void HandleGameobjectReportUse(WorldPackets::GameObject::GameObjReportUse& packet);
 
         void HandleNameQueryOpcode(WorldPackets::Query::QueryPlayerName& queryPlayerName);
+<<<<<<< HEAD
         void HandleQueryTimeOpcode(WorldPacket& recvPacket);
+=======
+        void HandleQueryTimeOpcode(WorldPackets::Query::QueryTime& queryTime);
+>>>>>>> upstream/3.3.5
         void HandleCreatureQueryOpcode(WorldPackets::Query::QueryCreature& query);
         void HandleGameObjectQueryOpcode(WorldPackets::Query::QueryGameObject& query);
 
@@ -846,8 +931,6 @@ class TC_GAME_API WorldSession
         void HandleMoveTimeSkippedOpcode(WorldPacket& recvData);
 
         void HandleRequestRaidInfoOpcode(WorldPacket& recvData);
-
-        void HandleBattlefieldStatusOpcode(WorldPacket& recvData);
 
         void HandleGroupInviteOpcode(WorldPackets::Party::PartyInviteClient& packet);
         void HandleGroupAcceptOpcode(WorldPacket& recvPacket);
@@ -881,7 +964,7 @@ class TC_GAME_API WorldSession
         void HandleGuildQueryOpcode(WorldPackets::Guild::QueryGuildInfo& query);
         void HandleGuildCreateOpcode(WorldPackets::Guild::GuildCreate& packet);
         void HandleGuildInviteOpcode(WorldPackets::Guild::GuildInviteByName& packet);
-        void HandleGuildRemoveOpcode(WorldPackets::Guild::GuildOfficerRemoveMember& packet);
+        void HandleGuildOfficerRemoveMember(WorldPackets::Guild::GuildOfficerRemoveMember& packet);
         void HandleGuildAcceptOpcode(WorldPackets::Guild::AcceptGuildInvite& invite);
         void HandleGuildDeclineOpcode(WorldPackets::Guild::GuildDeclineInvitation& decline);
         void HandleGuildInfoOpcode(WorldPackets::Guild::GuildGetInfo& packet);
@@ -916,7 +999,11 @@ class TC_GAME_API WorldSession
         void HandleGossipSelectOptionOpcode(WorldPacket& recvPacket);
         void HandleSpiritHealerActivateOpcode(WorldPacket& recvPacket);
         void HandleNpcTextQueryOpcode(WorldPackets::Query::QueryNPCText& packet);
+<<<<<<< HEAD
         void HandleBinderActivateOpcode(WorldPackets::NPC::Hello & packet);
+=======
+        void HandleBinderActivateOpcode(WorldPackets::NPC::Hello& packet);
+>>>>>>> upstream/3.3.5
         void HandleRequestStabledPets(WorldPacket& recvPacket);
         void HandleStablePet(WorldPacket& recvPacket);
         void HandleUnstablePet(WorldPacket& recvPacket);
@@ -924,8 +1011,8 @@ class TC_GAME_API WorldSession
         void HandleStableRevivePet(WorldPacket& recvPacket);
         void HandleStableSwapPet(WorldPacket& recvPacket);
 
-        void HandleDuelAcceptedOpcode(WorldPacket& recvPacket);
-        void HandleDuelCancelledOpcode(WorldPacket& recvPacket);
+        void HandleDuelAccepted(WorldPackets::Duel::DuelResponse& duelResponse);
+        void HandleDuelCancelled(WorldPackets::Duel::DuelResponse& duelResponse);
 
         void HandleAcceptTradeOpcode(WorldPacket& recvPacket);
         void HandleBeginTradeOpcode(WorldPacket& recvPacket);
@@ -938,7 +1025,7 @@ class TC_GAME_API WorldSession
         void HandleSetTradeItemOpcode(WorldPacket& recvPacket);
         void HandleUnacceptTradeOpcode(WorldPacket& recvPacket);
 
-        void HandleAuctionHelloOpcode(WorldPacket& recvPacket);
+        void HandleAuctionHelloOpcode(WorldPackets::AuctionHouse::AuctionHelloRequest& packet);
         void HandleAuctionListItems(WorldPacket& recvData);
         void HandleAuctionListBidderItems(WorldPacket& recvData);
         void HandleAuctionSellItem(WorldPacket& recvData);
@@ -969,7 +1056,7 @@ class TC_GAME_API WorldSession
         void HandleDestroyItemOpcode(WorldPackets::Item::DestroyItem& destroyItem);
         void HandleAutoEquipItemOpcode(WorldPackets::Item::AutoEquipItem& autoEquipItem);
         void HandleItemQuerySingleOpcode(WorldPackets::Query::QueryItemSingle& query);
-        void HandleSellItemOpcode(WorldPacket& recvPacket);
+        void HandleSellItemOpcode(WorldPackets::Item::SellItem& packet);
         void HandleBuyItemInSlotOpcode(WorldPacket& recvPacket);
         void HandleBuyItemOpcode(WorldPacket& recvPacket);
         void HandleListInventoryOpcode(WorldPackets::NPC::Hello& packet);
@@ -977,7 +1064,11 @@ class TC_GAME_API WorldSession
         void HandleReadItem(WorldPacket& recvPacket);
         void HandleAutoEquipItemSlotOpcode(WorldPacket& recvPacket);
         void HandleSwapItem(WorldPackets::Item::SwapItem& swapItem);
+<<<<<<< HEAD
         void HandleBuybackItem(WorldPacket& recvPacket);
+=======
+        void HandleBuybackItem(WorldPackets::Item::BuyBackItem& packet);
+>>>>>>> upstream/3.3.5
         void HandleWrapItemOpcode(WorldPacket& recvPacket);
 
         void HandleAttackSwingOpcode(WorldPackets::Combat::AttackSwing& packet);
@@ -996,7 +1087,11 @@ class TC_GAME_API WorldSession
         void HandleCancelChanneling(WorldPackets::Spells::CancelChannelling& cancelChanneling);
 
         void HandleLearnTalentOpcode(WorldPackets::Talent::LearnTalent& packet);
+<<<<<<< HEAD
         void HandleLearnPreviewTalents(WorldPackets::Talent::LearnPreviewTalents & learnPreviewTalents);
+=======
+        void HandleLearnPreviewTalents(WorldPackets::Talent::LearnPreviewTalents& learnPreviewTalents);
+>>>>>>> upstream/3.3.5
         void HandleTalentWipeConfirmOpcode(WorldPackets::Talent::ConfirmRespecWipe& confirmRespecWipe);
         void HandleUnlearnSkillOpcode(WorldPacket& recvPacket);
 
@@ -1004,9 +1099,9 @@ class TC_GAME_API WorldSession
         void HandleQuestgiverStatusMultipleQuery(WorldPackets::Quest::QuestGiverStatusMultipleQuery& packet);
         void HandleQuestgiverHelloOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvPacket);
-        void HandleQuestgiverQueryQuestOpcode(WorldPacket& recvPacket);
+        void HandleQuestgiverQueryQuestOpcode(WorldPackets::Quest::QuestGiverQueryQuest& packet);
         void HandleQuestgiverChooseRewardOpcode(WorldPacket& recvPacket);
-        void HandleQuestgiverRequestRewardOpcode(WorldPacket& recvPacket);
+        void HandleQuestgiverRequestRewardOpcode(WorldPackets::Quest::QuestGiverRequestReward& packet);
         void HandleQuestQueryOpcode(WorldPackets::Quest::QueryQuestInfo& query);
         void HandleQuestgiverCancel(WorldPacket& recvData);
         void HandleQuestLogSwapQuest(WorldPacket& recvData);
@@ -1033,6 +1128,7 @@ class TC_GAME_API WorldSession
         void HandleSummonResponseOpcode(WorldPacket& recvData);
 
         void HandleJoinChannel(WorldPackets::Channel::JoinChannel& packet);
+<<<<<<< HEAD
         void HandleLeaveChannel(WorldPackets::Channel::LeaveChannel & packet);
         void HandleChannelList(WorldPackets::Channel::ChannelListRequest & packet);
         void HandleChannelPassword(WorldPacket& recvPacket);
@@ -1050,6 +1146,12 @@ class TC_GAME_API WorldSession
         void HandleChannelDeclineInvite(WorldPacket& recvPacket);
         void HandleGetChannelMemberCount(WorldPacket& recvPacket);
         void HandleSetChannelWatch(WorldPacket& recvPacket);
+=======
+        void HandleLeaveChannel(WorldPackets::Channel::LeaveChannel& packet);
+        void HandleChannelCommand(WorldPackets::Channel::ChannelCommand& packet);
+        void HandleChannelPlayerCommand(WorldPackets::Channel::ChannelPlayerCommand& packet);
+        void HandleChannelPassword(WorldPackets::Channel::ChannelPassword& packet);
+>>>>>>> upstream/3.3.5
 
         void HandleCompleteCinematic(WorldPackets::Misc::CompleteCinematic& packet);
         void HandleNextCinematicCamera(WorldPackets::Misc::NextCinematicCamera& packet);
@@ -1058,8 +1160,13 @@ class TC_GAME_API WorldSession
         void HandleQueryPageText(WorldPackets::Query::QueryPageText& packet);
 
         void HandleTutorialFlag(WorldPackets::Misc::TutorialSetFlag& packet);
+<<<<<<< HEAD
         void HandleTutorialClear(WorldPackets::Misc::TutorialClear & tutorialClear);
         void HandleTutorialReset(WorldPackets::Misc::TutorialReset & tutorialReset);
+=======
+        void HandleTutorialClear(WorldPackets::Misc::TutorialClear& tutorialClear);
+        void HandleTutorialReset(WorldPackets::Misc::TutorialReset& tutorialReset);
+>>>>>>> upstream/3.3.5
 
         //Pet
         void HandlePetAction(WorldPacket& recvData);
@@ -1081,15 +1188,19 @@ class TC_GAME_API WorldSession
         void HandleDismissCritter(WorldPackets::Pet::DismissCritter& dismissCritter);
 
         //Battleground
-        void HandleBattlemasterHelloOpcode(WorldPacket& recvData);
-        void HandleBattlemasterJoinOpcode(WorldPacket& recvData);
-        void HandleBattlegroundPlayerPositionsOpcode(WorldPacket& recvData);
-        void HandlePVPLogDataOpcode(WorldPacket& recvData);
-        void HandleBattleFieldPortOpcode(WorldPacket& recvData);
-        void HandleBattlefieldListOpcode(WorldPacket& recvData);
-        void HandleBattlefieldLeaveOpcode(WorldPacket& recvData);
-        void HandleBattlemasterJoinArena(WorldPacket& recvData);
-        void HandleReportPvPAFK(WorldPacket& recvData);
+        void HandleBattlemasterHelloOpcode(WorldPackets::NPC::Hello& hello);
+        void HandleBattlemasterJoinOpcode(WorldPackets::Battleground::BattlemasterJoin& battlemasterJoin);
+        void HandleBattlegroundPlayerPositionsOpcode(WorldPackets::Battleground::BattlegroundPlayerPositionsRequest& battlegroundPlayerPositionsRequest);
+        void HandlePVPLogDataOpcode(WorldPackets::Battleground::PVPLogDataRequest& pvpLogDataRequest);
+        void HandleBattleFieldPortOpcode(WorldPackets::Battleground::BattlefieldPort& battlefieldPort);
+        void HandleBattlefieldListOpcode(WorldPackets::Battleground::BattlefieldListRequest& battlefieldList);
+        void HandleBattlefieldLeaveOpcode(WorldPackets::Battleground::BattlefieldLeave& battlefieldLeave);
+        void HandleBattlemasterJoinArena(WorldPackets::Battleground::BattlemasterJoinArena& packet);
+        void HandleReportPvPAFK(WorldPackets::Battleground::ReportPvPPlayerAFK& reportPvPPlayerAFK);
+        void HandleAreaSpiritHealerQueryOpcode(WorldPackets::Battleground::AreaSpiritHealerQuery& areaSpiritHealerQuery);
+        void HandleAreaSpiritHealerQueueOpcode(WorldPackets::Battleground::AreaSpiritHealerQueue& areaSpiritHealerQueue);
+        void HandleHearthAndResurrect(WorldPackets::Battleground::HearthAndResurrect& hearthAndResurrect);
+        void HandleRequestBattlefieldStatusOpcode(WorldPackets::Battleground::RequestBattlefieldStatus& requestBattlefieldStatus);
 
         // Battlefield
         void SendBattlefieldInvitePlayerToWar(uint32 battleId, uint32 zoneId, uint32 time);
@@ -1108,14 +1219,13 @@ class TC_GAME_API WorldSession
         void HandleMinimapPingOpcode(WorldPacket& recvData);
         void HandleRandomRollOpcode(WorldPackets::Misc::RandomRollClient& packet);
         void HandleFarSightOpcode(WorldPacket& recvData);
-        void HandleSetDungeonDifficultyOpcode(WorldPacket& recvData);
-        void HandleSetRaidDifficultyOpcode(WorldPacket& recvData);
+        void HandleSetDungeonDifficultyOpcode(WorldPackets::Misc::SetDungeonDifficulty& setDungeonDifficulty);
+        void HandleSetRaidDifficultyOpcode(WorldPackets::Misc::SetRaidDifficulty& setRaidDifficulty);
         void HandleSetTitleOpcode(WorldPacket& recvData);
         void HandleRealmSplitOpcode(WorldPacket& recvData);
         void HandleTimeSyncResponse(WorldPackets::Misc::TimeSyncResponse& packet);
         void HandleWhoIsOpcode(WorldPacket& recvData);
         void HandleResetInstancesOpcode(WorldPacket& recvData);
-        void HandleHearthAndResurrect(WorldPacket& recvData);
         void HandleInstanceLockResponse(WorldPacket& recvPacket);
 
         // Looking for Dungeon/Raid
@@ -1160,8 +1270,6 @@ class TC_GAME_API WorldSession
         void HandleArenaTeamDisbandOpcode(WorldPacket& recvData);
         void HandleArenaTeamLeaderOpcode(WorldPacket& recvData);
 
-        void HandleAreaSpiritHealerQueryOpcode(WorldPacket& recvData);
-        void HandleAreaSpiritHealerQueueOpcode(WorldPacket& recvData);
         void HandleSelfResOpcode(WorldPacket& recvData);
         void HandleComplainOpcode(WorldPacket& recvData);
         void HandleRequestPetInfo(WorldPackets::Pet::RequestPetInfo& packet);
@@ -1171,10 +1279,9 @@ class TC_GAME_API WorldSession
 
         void HandleCancelTempEnchantmentOpcode(WorldPacket& recvData);
 
-        void HandleItemRefundInfoRequest(WorldPacket& recvData);
+        void HandleGetItemPurchaseData(WorldPackets::Item::GetItemPurchaseData& packet);
         void HandleItemRefund(WorldPacket& recvData);
 
-        void HandleChannelVoiceOnOpcode(WorldPacket& recvData);
         void HandleVoiceSessionEnableOpcode(WorldPacket& recvData);
         void HandleSetActiveVoiceChannel(WorldPacket& recvData);
         void HandleSetTaxiBenchmarkOpcode(WorldPacket& recvData);
@@ -1230,7 +1337,7 @@ class TC_GAME_API WorldSession
         void HandleEquipmentSetUse(WorldPacket& recvData);
         void HandleWorldStateUITimerUpdate(WorldPackets::Misc::UITimeRequest& recvData);
         void HandleReadyForAccountDataTimes(WorldPacket& recvData);
-        void HandleQueryQuestsCompleted(WorldPacket& recvData);
+        void HandleQueryQuestsCompleted(WorldPackets::Quest::QueryQuestsCompleted& queryQuestsCompleted);
         void HandleQuestPOIQuery(WorldPackets::Query::QuestPOIQuery& query);
         void HandleEjectPassenger(WorldPacket& data);
         void HandleEnterPlayerVehicle(WorldPacket& data);
@@ -1366,5 +1473,6 @@ class TC_GAME_API WorldSession
         WorldSession(WorldSession const& right) = delete;
         WorldSession& operator=(WorldSession const& right) = delete;
 };
+
 #endif
 /// @}

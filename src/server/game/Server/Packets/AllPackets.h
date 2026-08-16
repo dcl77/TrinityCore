@@ -19,22 +19,36 @@
 #define TRINITYCORE_ALL_PACKETS_H
 
 #include "AchievementPackets.h"
+<<<<<<< HEAD
 #include "AuthenticationPackets.h"
 #include "BankPackets.h"
 #include "BattlefieldPackets.h"
+=======
+#include "AreaTriggerPackets.h"
+#include "AuctionHousePackets.h"
+#include "AuthenticationPackets.h"
+#include "BankPackets.h"
+#include "BattlegroundPackets.h"
+>>>>>>> upstream/3.3.5
 #include "CalendarPackets.h"
+#include "ChannelPackets.h"
 #include "CharacterPackets.h"
 #include "ChannelPackets.h"
 #include "ChatPackets.h"
 #include "ClientConfigPackets.h"
 #include "CombatLogPackets.h"
 #include "CombatPackets.h"
+<<<<<<< HEAD
+=======
+#include "DuelPackets.h"
+>>>>>>> upstream/3.3.5
 #include "EquipmentSetPackets.h"
 #include "GameObjectPackets.h"
 #include "GuildPackets.h"
 #include "InspectPackets.h"
 #include "ItemPackets.h"
 #include "LFGPackets.h"
+#include "LootPackets.h"
 #include "MailPackets.h"
 #include "MiscPackets.h"
 #include "MovementPackets.h"

@@ -1,5 +1,13 @@
+<<<<<<< HEAD
 /*
  Navicat Premium Data Transfer
+=======
+-- MySQL dump 10.13  Distrib 8.0.43, for Linux (x86_64)
+--
+-- Host: localhost    Database: characters
+-- ------------------------------------------------------
+-- Server version	8.0.43-0ubuntu0.22.04.2
+>>>>>>> upstream/3.3.5
 
  Source Server         : localhost_3306
  Source Server Type    : MySQL
@@ -779,6 +787,7 @@ CREATE TABLE `character_queststatus_rewarded`  (
 -- Table structure for character_queststatus_seasonal
 -- ----------------------------
 DROP TABLE IF EXISTS `character_queststatus_seasonal`;
+<<<<<<< HEAD
 CREATE TABLE `character_queststatus_seasonal`  (
   `guid` int UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Global Unique Identifier',
   `quest` int UNSIGNED NOT NULL DEFAULT 0 COMMENT 'Quest Identifier',
@@ -787,6 +796,19 @@ CREATE TABLE `character_queststatus_seasonal`  (
   PRIMARY KEY (`guid`, `quest`) USING BTREE,
   INDEX `idx_guid`(`guid` ASC) USING BTREE
 ) ENGINE = InnoDB CHARACTER SET = utf8mb3 COLLATE = utf8mb3_general_ci COMMENT = 'Player System' ROW_FORMAT = DYNAMIC;
+=======
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `character_queststatus_seasonal` (
+  `guid` int unsigned NOT NULL DEFAULT '0' COMMENT 'Global Unique Identifier',
+  `quest` int unsigned NOT NULL DEFAULT '0' COMMENT 'Quest Identifier',
+  `event` int unsigned NOT NULL DEFAULT '0' COMMENT 'Event Identifier',
+  `completedTime` bigint NOT NULL DEFAULT '0',
+  PRIMARY KEY (`guid`,`quest`),
+  KEY `idx_guid` (`guid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Player System';
+/*!40101 SET character_set_client = @saved_cs_client */;
+>>>>>>> upstream/3.3.5
 
 -- ----------------------------
 -- Records of character_queststatus_seasonal
@@ -2302,8 +2324,14 @@ INSERT INTO `updates` VALUES
 ('2024_08_17_00_characters.sql','08705FBCB8504E8B1009FDAF955F56D734FAD782','ARCHIVED','2024-08-17 22:26:12',0),
 ('2024_10_03_00_characters.sql','408249A6992999A36EB94089D184972E8E0767A3','ARCHIVED','2024-10-03 11:10:18',0),
 ('2024_11_22_00_characters.sql','9EA2A4F88036D1D5F47EE8A6B634D52D0014986E','ARCHIVED','2024-11-22 23:18:14',0),
+<<<<<<< HEAD
 ('2025_07_20_00_characters_2022_07_03_00_characters.sql','D3F04078C0846BCF7C8330AC20C39B8C3AEE7002','RELEASED','2022-07-03 23:37:24',0),
 ('2025_09_09_00_characters.sql','A1A793D656117C31DAA92653DF0BE4AE6354358A','RELEASED','2025-09-09 14:03:38',0);
+=======
+('2025_07_20_00_characters_2022_07_03_00_characters.sql','D3F04078C0846BCF7C8330AC20C39B8C3AEE7002','ARCHIVED','2022-07-03 23:37:24',0),
+('2025_09_09_00_characters.sql','A1A793D656117C31DAA92653DF0BE4AE6354358A','ARCHIVED','2025-09-09 14:03:38',0),
+('2025_10_21_00_characters.sql','DAC3249AE0CF374815D6A656489FE7B0AD3AA051','ARCHIVED','2025-10-21 18:16:45',0);
+>>>>>>> upstream/3.3.5
 /*!40000 ALTER TABLE `updates` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -2444,4 +2472,106 @@ CREATE TABLE `worldstates`  (
 -- Records of worldstates
 -- ----------------------------
 
+<<<<<<< HEAD
 SET FOREIGN_KEY_CHECKS = 1;
+=======
+LOCK TABLES `worldstates` WRITE;
+/*!40000 ALTER TABLE `worldstates` DISABLE KEYS */;
+INSERT INTO `worldstates` VALUES
+(1,0,NULL),
+(2,0,NULL),
+(3,0,NULL),
+(4,0,NULL),
+(5,0,NULL),
+(6,0,NULL),
+(7,0,NULL),
+(8,0,NULL),
+(9,0,NULL),
+(10,0,NULL),
+(11,0,NULL),
+(12,0,NULL),
+(13,0,NULL),
+(14,0,NULL),
+(15,0,NULL),
+(16,0,NULL),
+(17,0,NULL),
+(18,0,NULL),
+(19,0,NULL),
+(20,0,NULL),
+(21,0,NULL),
+(22,0,NULL),
+(23,0,NULL),
+(24,0,NULL),
+(25,0,NULL),
+(26,0,NULL),
+(27,0,NULL),
+(28,0,NULL),
+(29,0,NULL),
+(30,0,NULL),
+(31,0,NULL),
+(32,0,NULL),
+(33,0,NULL),
+(34,0,NULL),
+(35,0,NULL),
+(36,0,NULL),
+(37,0,NULL),
+(38,0,NULL),
+(39,0,NULL),
+(40,0,NULL),
+(41,0,NULL),
+(42,0,NULL),
+(43,0,NULL),
+(44,0,NULL),
+(45,0,NULL),
+(46,0,NULL),
+(47,0,NULL),
+(48,0,NULL),
+(49,0,NULL),
+(50,0,NULL),
+(51,0,NULL),
+(52,0,NULL),
+(53,0,NULL),
+(54,0,NULL),
+(55,0,NULL),
+(56,0,NULL),
+(57,0,NULL),
+(58,0,NULL),
+(59,0,NULL),
+(60,0,NULL),
+(61,0,NULL),
+(62,0,NULL),
+(63,0,NULL),
+(64,0,NULL),
+(65,0,NULL),
+(66,0,NULL),
+(67,0,NULL),
+(68,0,NULL),
+(69,0,NULL),
+(3781,0,NULL),
+(3801,0,NULL),
+(3802,0,NULL),
+(20001,0,'NextArenaPointDistributionTime'),
+(20002,0,'NextWeeklyQuestResetTime'),
+(20003,0,'NextBGRandomDailyResetTime'),
+(20004,0,'cleaning_flags'),
+(20006,0,'NextGuildDailyResetTime'),
+(20007,0,'NextMonthlyQuestResetTime'),
+(20008,0,'NextDailyQuestResetTime');
+/*!40000 ALTER TABLE `worldstates` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Dumping routines for database 'characters'
+--
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-10-21 18:16:58
+>>>>>>> upstream/3.3.5

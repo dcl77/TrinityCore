@@ -90,7 +90,14 @@ class TC_GAME_API Battlefield : public ZoneScript
         /// Call this to init the Battlefield
         virtual bool SetupBattlefield() { return true; }
 
+<<<<<<< HEAD
         virtual void prepareDelete() { }
+=======
+        void SendInitWorldStatesTo(Player* player);
+
+        /// Update data of a worldstate to all players present in zone
+        void SendUpdateWorldState(uint32 variable, uint32 value);
+>>>>>>> upstream/3.3.5
 
         /**
          * \brief Called every time for update bf data and time

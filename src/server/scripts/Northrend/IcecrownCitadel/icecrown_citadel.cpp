@@ -238,6 +238,7 @@ enum ICCMisc
     POINT_LAND          = 1,
 };
 
+<<<<<<< HEAD
 class npc_flesh_eating_insect : public CreatureScript
 {
 public:
@@ -533,6 +534,8 @@ public:
     }
 };
 
+=======
+>>>>>>> upstream/3.3.5
 // 37119 - Highlord Tirion Fordring (At Light's Hammer)
 struct npc_highlord_tirion_fordring_lh : public ScriptedAI
 {

@@ -603,7 +603,11 @@ class instance_ulduar : public InstanceMapScript
                         if (Creature* hodir = GetCreature(DATA_HODIR))
                             hodir->AI()->DoAction(ACTION_CACHE_SHATTERED);
                         if (GameObject* hodirRareCache = instance->GetGameObject(HodirRareCacheGUID))
+<<<<<<< HEAD
                             hodirRareCache->ActivateObject(GameObjectActions(GameObjectActions::Despawn));
+=======
+                            hodirRareCache->ActivateObject(GameObjectActions::Despawn);
+>>>>>>> upstream/3.3.5
                         break;
                     case EVENT_FLASH_FREEZE_FINISHED:
                         if (Creature* hodir = GetCreature(DATA_HODIR))
@@ -671,9 +675,15 @@ class instance_ulduar : public InstanceMapScript
                         if (state == DONE)
                         {
                             if (GameObject* hodirRareCache = instance->GetGameObject(HodirRareCacheGUID))
+<<<<<<< HEAD
                                 hodirRareCache->ActivateObject(GameObjectActions(GameObjectActions::MakeActive));
                             if (GameObject* hodirChest = instance->GetGameObject(HodirChestGUID))
                                 hodirChest->ActivateObject(GameObjectActions(GameObjectActions::MakeActive));
+=======
+                                hodirRareCache->ActivateObject(GameObjectActions::MakeActive);
+                            if (GameObject* hodirChest = instance->GetGameObject(HodirChestGUID))
+                                hodirChest->ActivateObject(GameObjectActions::MakeActive);
+>>>>>>> upstream/3.3.5
 
                             instance->SummonCreature(NPC_HODIR_OBSERVATION_RING, ObservationRingKeepersPos[1]);
                         }

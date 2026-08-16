@@ -316,17 +316,25 @@ void WorldSession::HandleCharCreateOpcode(WorldPackets::Character::CreateCharact
     }
 
     // prevent character creating Expansion race without Expansion account
-    if (raceEntry->RequiredExpansion > Expansion())
+    if (raceEntry->RequiredExpansion > GetExpansion())
     {
+<<<<<<< HEAD
         TC_LOG_ERROR("entities.player.cheat", "Expansion {} account:[{}] tried to Create character with expansion {} race ({})", Expansion(), GetAccountId(), raceEntry->RequiredExpansion, charCreate.CreateInfo->Race);
+=======
+        TC_LOG_ERROR("entities.player.cheat", "Expansion {} account:[{}] tried to Create character with expansion {} race ({})", GetExpansion(), GetAccountId(), raceEntry->RequiredExpansion, charCreate.CreateInfo->Race);
+>>>>>>> upstream/3.3.5
         SendCharCreate(CHAR_CREATE_EXPANSION);
         return;
     }
 
     // prevent character creating Expansion class without Expansion account
-    if (classEntry->RequiredExpansion > Expansion())
+    if (classEntry->RequiredExpansion > GetExpansion())
     {
+<<<<<<< HEAD
         TC_LOG_ERROR("entities.player.cheat", "Expansion {} account:[{}] tried to Create character with expansion {} class ({})", Expansion(), GetAccountId(), classEntry->RequiredExpansion, charCreate.CreateInfo->Class);
+=======
+        TC_LOG_ERROR("entities.player.cheat", "Expansion {} account:[{}] tried to Create character with expansion {} class ({})", GetExpansion(), GetAccountId(), classEntry->RequiredExpansion, charCreate.CreateInfo->Class);
+>>>>>>> upstream/3.3.5
         SendCharCreate(CHAR_CREATE_EXPANSION_CLASS);
         return;
     }
@@ -739,7 +747,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
     }
 
     pCurrChar->GetMotionMaster()->Initialize();
-    pCurrChar->SendDungeonDifficulty(false);
+    pCurrChar->SendDungeonDifficulty(true, false);
+    pCurrChar->SendRaidDifficulty(true, false);
 
     WorldPackets::Character::LoginVerifyWorld loginVerifyWorld;
     loginVerifyWorld.MapID = pCurrChar->GetMapId();
@@ -977,6 +986,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
     if (pCurrChar->IsGameMaster())
         SendNotification(LANG_GM_ON);
 
+<<<<<<< HEAD
     uint32 coins = AccountMgr::GetCoins(GetAccountId());
     pCurrChar->SetCoins(coins);
 
@@ -1007,6 +1017,8 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder const& holder)
     }
     pCurrChar->GetAditionalData()->setPremiumStatus(vip);
 
+=======
+>>>>>>> upstream/3.3.5
     TC_LOG_INFO("entities.player.character", "Account: {} (IP: {}) Login Character:[{}] {} Level: {}, XP: {}/{} ({} left)",
         GetAccountId(), GetRemoteAddress(), pCurrChar->GetName(), pCurrChar->GetGUID().ToString(), pCurrChar->GetLevel(),
         _player->GetXP(), _player->GetXPForNextLevel(), std::max(0, (int32)_player->GetXPForNextLevel() - (int32)_player->GetXP()));
@@ -1041,7 +1053,7 @@ void WorldSession::SendFeatureSystemStatus()
 
 void WorldSession::HandleSetFactionAtWar(WorldPacket& recvData)
 {
-    TC_LOG_DEBUG("network", "WORLD: Received CMSG_SET_FACTION_ATWAR");
+    TC_LOG_DEBUG("network", "WORLD: Received CMSG_SET_FACTION_AT_WAR");
 
     uint32 repListID;
     uint8  flag;

@@ -319,7 +319,11 @@ enum TyrionSpybot
     NPC_LORD_GREGOR_LESCOVAR = 1754,
 };
 
+<<<<<<< HEAD
 static constexpr uint32 PATH_ESCORT_LESCOVAR = 70850;
+=======
+static constexpr uint32 PATH_ESCORT_LESCOVAR = 14034;
+>>>>>>> upstream/3.3.5
 
 class npc_tyrion_spybot : public CreatureScript
 {
@@ -474,7 +478,11 @@ enum Tyrion
     NPC_TYRION_SPYBOT = 8856
 };
 
+<<<<<<< HEAD
 static constexpr uint32 PATH_ESCORT_TYRION_SPYBOT = 14034;
+=======
+static constexpr uint32 PATH_ESCORT_TYRION_SPYBOT = 70850;
+>>>>>>> upstream/3.3.5
 
 class npc_tyrion : public CreatureScript
 {

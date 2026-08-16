@@ -144,12 +144,15 @@ bool GameEventMgr::StartEvent(uint16 event_id, bool overwrite)
             if (data.end <= data.start)
                 data.end = data.start + data.length * MINUTE;
         }
+<<<<<<< HEAD
 
 #ifdef ELUNA
         if (IsActiveEvent(event_id))
             if (Eluna* e = sWorld->GetEluna())
                 e->OnGameEventStart(event_id);
 #endif
+=======
+>>>>>>> upstream/3.3.5
         return false;
     }
     else

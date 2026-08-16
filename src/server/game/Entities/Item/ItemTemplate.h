@@ -631,6 +631,7 @@ struct TC_GAME_API ItemTemplate
     uint32 ScalingStatDistribution{};                         // id from ScalingStatDistribution.dbc
     uint32 ScalingStatValue{};                                // mask for selecting column in ScalingStatValues.dbc
     std::array<_Damage, MAX_ITEM_PROTO_DAMAGES> Damage;
+<<<<<<< HEAD
     uint32 Armor{};
     uint32 HolyRes{};
     uint32 FireRes{};
@@ -643,6 +644,20 @@ struct TC_GAME_API ItemTemplate
     float  RangedModRange{};
     std::array<ItemEffect, MAX_ITEM_PROTO_SPELLS> Effects;
     uint32 Bonding{};
+=======
+    uint32 Armor;
+    uint32 HolyRes;
+    uint32 FireRes;
+    uint32 NatureRes;
+    uint32 FrostRes;
+    uint32 ShadowRes;
+    uint32 ArcaneRes;
+    uint32 Delay;
+    uint32 AmmoType;
+    float  RangedModRange;
+    std::array<ItemEffect, MAX_ITEM_PROTO_SPELLS> Effects;
+    uint32 Bonding;
+>>>>>>> upstream/3.3.5
     std::string  Description;
     uint32 PageText{};
     uint32 LanguageID{};

@@ -245,7 +245,11 @@ struct TC_GAME_API ScriptedAI : public CreatureAI
         Difficulty GetDifficulty() const { return _difficulty; }
 
         // return true for 25 man or 25 man heroic mode
-        bool Is25ManRaid() const { return _difficulty & RAID_DIFFICULTY_MASK_25MAN; }
+        bool Is25ManRaid() const { return _difficulty == RAID_DIFFICULTY_25MAN_NORMAL || _difficulty == RAID_DIFFICULTY_25MAN_HEROIC; }
+
+        void SetAggressiveStateAfter(Milliseconds timer, Creature* who = nullptr, bool startCombat = true, Creature* summoner = nullptr, StartCombatArgs const& combatArgs = { });
+
+        void DoAddEvent(Milliseconds timer, BasicEvent* event, WorldObject* who = nullptr);
 
         void SetAggressiveStateAfter(Milliseconds timer, Creature* who = nullptr, bool startCombat = true, Creature* summoner = nullptr, StartCombatArgs const& combatArgs = { });
 

@@ -388,7 +388,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPackets::Spells::CastSpell& castRe
         }
 
     if (castRequest.Cast.MissileTrajectory && castRequest.Cast.MissileTrajectory->MoveUpdate)
+<<<<<<< HEAD
          HandleMovementOpcode(MSG_MOVE_STOP, *castRequest.Cast.MissileTrajectory->MoveUpdate);
+=======
+        HandleMovementOpcode(MSG_MOVE_STOP, *castRequest.Cast.MissileTrajectory->MoveUpdate);
+>>>>>>> upstream/3.3.5
 
     Spell* spell = new Spell(_player, spellInfo, triggerFlag);
     spell->m_fromClient = true;
@@ -644,6 +648,7 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
             else if (*itr == EQUIPMENT_SLOT_BACK && player->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_HIDE_CLOAK))
                 data << uint32(0);
             else if (Item const* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, *itr))
+<<<<<<< HEAD
             {
                 if (auto const * itemTemplate = sObjectMgr->GetItemTemplate(item->transmog))
                     data << uint32(itemTemplate->DisplayInfoID);
@@ -652,6 +657,9 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
                 else
                     data << uint32(item->GetDisplayId());
             }
+=======
+                data << uint32(item->GetDisplayId());
+>>>>>>> upstream/3.3.5
             else
                 data << uint32(0);
         }

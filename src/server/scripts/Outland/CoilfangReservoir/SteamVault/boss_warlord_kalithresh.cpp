@@ -16,7 +16,11 @@
  */
 
 /*
+<<<<<<< HEAD
  * Timers requires update
+=======
+ * Timers requires to be revisited
+>>>>>>> upstream/3.3.5
  * Distillers should respawn at some point, probably in case of wipe
  */
 
@@ -41,6 +45,7 @@ enum KalithreshSpells
 {
     SPELL_HEAD_CRACK                 = 16172,
     SPELL_REFLECTION                 = 31534,
+<<<<<<< HEAD
     SPELL_IMPALE                     = 39061,
 
     SPELL_WARLORDS_RAGE              = 37081,
@@ -58,6 +63,14 @@ enum KalithreshSpells
     SPELL_DISTILLER_DUMMY_TRIGGER_2  = 34065,
     // Distiller
     SPELL_STUN_SELF                  = 25900,
+=======
+
+    SPELL_WARLORDS_RAGE              = 37081,
+
+    // Distiller
+    SPELL_STUN_SELF                  = 25900,
+    SPELL_WARLORDS_RAGE_DISTILLER    = 31543,
+>>>>>>> upstream/3.3.5
     SPELL_QUIET_SUICIDE              = 3617
 };
 
@@ -65,7 +78,10 @@ enum KalithreshEvents
 {
     EVENT_HEAD_CRACK                 = 1,
     EVENT_REFLECTION,
+<<<<<<< HEAD
     EVENT_IMPALE,
+=======
+>>>>>>> upstream/3.3.5
     EVENT_RAGE
 };
 
@@ -91,6 +107,7 @@ struct boss_warlord_kalithresh : public BossAI
 
     void JustEngagedWith(Unit* who) override
     {
+<<<<<<< HEAD
         Talk(SAY_AGGRO);
         BossAI::JustEngagedWith(who);
 
@@ -98,6 +115,18 @@ struct boss_warlord_kalithresh : public BossAI
         events.ScheduleEvent(EVENT_REFLECTION, 15s, 25s);
         events.ScheduleEvent(EVENT_IMPALE, 7s, 14s);
         events.ScheduleEvent(EVENT_RAGE, 10s, 20s);
+=======
+        BossAI::JustEngagedWith(who);
+
+        Talk(SAY_AGGRO);
+
+        events.ScheduleEvent(EVENT_HEAD_CRACK, 10s, 15s);
+        events.ScheduleEvent(EVENT_REFLECTION, 15s, 25s);
+        events.ScheduleEvent(EVENT_RAGE, 10s, 20s);
+
+        if (GameObject* go = instance->GetGameObject(DATA_MAIN_CHAMBERS_DOOR))
+            instance->HandleGameObject(ObjectGuid::Empty, false, go);
+>>>>>>> upstream/3.3.5
     }
 
     /// @todo: Handle this with GameObject 184106 (Coilfang Steamvaults - Kalithresh Event - Trigger 000)
@@ -135,6 +164,17 @@ struct boss_warlord_kalithresh : public BossAI
             me->RemoveAurasDueToSpell(SPELL_WARLORDS_RAGE);
     }
 
+<<<<<<< HEAD
+=======
+    void JustReachedHome() override
+    {
+        _JustReachedHome();
+
+        if (GameObject* go = instance->GetGameObject(DATA_MAIN_CHAMBERS_DOOR))
+            instance->HandleGameObject(ObjectGuid::Empty, true, go);
+    }
+
+>>>>>>> upstream/3.3.5
     void KilledUnit(Unit* /*victim*/) override
     {
         if (roll_chance_i(50))
@@ -145,14 +185,25 @@ struct boss_warlord_kalithresh : public BossAI
 
     void JustDied(Unit* /*killer*/) override
     {
+<<<<<<< HEAD
         Talk(SAY_DEATH);
         _JustDied();
+=======
+        _JustDied();
+        Talk(SAY_DEATH);
+>>>>>>> upstream/3.3.5
 
         std::vector<Creature*> distillers;
         GetCreatureListWithEntryInGrid(distillers, me, NPC_NAGA_DISTILLER, 250.0f);
         for (Creature* distiller : distillers)
             if (distiller->IsAlive())
                 distiller->CastSpell(distiller, SPELL_QUIET_SUICIDE, true);
+<<<<<<< HEAD
+=======
+
+        if (GameObject* go = instance->GetGameObject(DATA_MAIN_CHAMBERS_DOOR))
+            instance->HandleGameObject(ObjectGuid::Empty, true, go);
+>>>>>>> upstream/3.3.5
     }
 
     void UpdateAI(uint32 diff) override
@@ -172,12 +223,16 @@ struct boss_warlord_kalithresh : public BossAI
                     break;
                 case EVENT_REFLECTION:
                     DoCastSelf(SPELL_REFLECTION);
+<<<<<<< HEAD
                     events.Repeat(15s, 25s);
                     break;
                 case EVENT_IMPALE:
                     if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0))
                         DoCast(target, SPELL_IMPALE);
                     events.Repeat(7s, 12s);
+=======
+                    events.Repeat(20s, 40s);
+>>>>>>> upstream/3.3.5
                     break;
                 case EVENT_RAGE:
                     if (Creature* distiller = me->FindNearestCreature(NPC_NAGA_DISTILLER, 150.0f))

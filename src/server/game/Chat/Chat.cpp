@@ -148,6 +148,7 @@ void ChatHandler::SendSysMessage(uint32 entry)
     SendSysMessage(GetTrinityString(entry));
 }
 
+<<<<<<< HEAD
 void ChatHandler::SendErrorMessage(uint32 entry)
 {
     SendSysMessage(entry);
@@ -160,6 +161,8 @@ void ChatHandler::SendErrorMessage(std::string_view str, bool escapeCharacters)
     SetSentErrorMessage(true);
 }
 
+=======
+>>>>>>> upstream/3.3.5
 std::string ChatHandler::StringVPrintf(std::string_view messageFormat, fmt::printf_args messageFormatArgs)
 {
     return fmt::vsprintf<char>(messageFormat, messageFormatArgs);

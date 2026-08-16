@@ -147,7 +147,11 @@ std::string _SpellScript::EffectNameCheck::ToString()
         case SPELL_EFFECT_ANY:
             return "SPELL_EFFECT_ANY";
         default:
+<<<<<<< HEAD
             return Trinity::ToString(effName);
+=======
+            return Trinity::StringFormat("SPELL_EFFECT_{}", effName);
+>>>>>>> upstream/3.3.5
     }
 }
 
@@ -168,7 +172,11 @@ std::string _SpellScript::EffectAuraNameCheck::ToString()
         case SPELL_AURA_ANY:
             return "SPELL_AURA_ANY";
         default:
+<<<<<<< HEAD
             return Trinity::ToString(effAurName);
+=======
+            return Trinity::StringFormat("SPELL_AURA_{}", effAurName);
+>>>>>>> upstream/3.3.5
     }
 }
 
@@ -518,7 +526,11 @@ int64 SpellScript::GetUnitTargetCountForEffect(SpellEffIndex effect) const
 {
     if (!IsAfterTargetSelectionPhase())
     {
+<<<<<<< HEAD
         TC_LOG_ERROR("scripts", "Script: `{}` Spell: `{}`: function SpellScript::GetUnitTargetCountForEffect was called, but function has no effect in current hook! (spell has not selected targets yet)",
+=======
+        TC_LOG_ERROR("scripts", "Script: `%s` Spell: `%u`: function SpellScript::GetUnitTargetCountForEffect was called, but function has no effect in current hook! (spell has not selected targets yet)",
+>>>>>>> upstream/3.3.5
             m_scriptName->c_str(), m_scriptSpellId);
         return 0;
     }
@@ -529,7 +541,11 @@ int64 SpellScript::GetGameObjectTargetCountForEffect(SpellEffIndex effect) const
 {
     if (!IsAfterTargetSelectionPhase())
     {
+<<<<<<< HEAD
         TC_LOG_ERROR("scripts", "Script: `{}` Spell: `{}`: function SpellScript::GetGameObjectTargetCountForEffect was called, but function has no effect in current hook! (spell has not selected targets yet)",
+=======
+        TC_LOG_ERROR("scripts", "Script: `%s` Spell: `%u`: function SpellScript::GetGameObjectTargetCountForEffect was called, but function has no effect in current hook! (spell has not selected targets yet)",
+>>>>>>> upstream/3.3.5
             m_scriptName->c_str(), m_scriptSpellId);
         return 0;
     }
@@ -540,7 +556,11 @@ int64 SpellScript::GetItemTargetCountForEffect(SpellEffIndex effect) const
 {
     if (!IsAfterTargetSelectionPhase())
     {
+<<<<<<< HEAD
         TC_LOG_ERROR("scripts", "Script: `{}` Spell: `{}`: function SpellScript::GetItemTargetCountForEffect was called, but function has no effect in current hook! (spell has not selected targets yet)",
+=======
+        TC_LOG_ERROR("scripts", "Script: `%s` Spell: `%u`: function SpellScript::GetItemTargetCountForEffect was called, but function has no effect in current hook! (spell has not selected targets yet)",
+>>>>>>> upstream/3.3.5
             m_scriptName->c_str(), m_scriptSpellId);
         return 0;
     }

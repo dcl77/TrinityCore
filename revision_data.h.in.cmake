@@ -43,11 +43,20 @@
 #define DATABASE_FULL_DATABASE      "TDB_full_world_335.25101_2025_10_21.sql"
 
 // Windows resource defines
+<<<<<<< HEAD
 #define TRINITY_COMPANYNAME_STR         "Ctulhunet.ru Developers"
 #define TRINITY_LEGALCOPYRIGHT_STR      "(c)2012-@rev_year@ Ctulhunet.ru"
+=======
+#define TRINITY_COMPANYNAME_STR         "TrinityCore Developers"
+#define TRINITY_LEGALCOPYRIGHT_STR      "(c)2008-@rev_year@ TrinityCore"
+>>>>>>> upstream/3.3.5
 #define TRINITY_FILEVERSION             0,0,0
 #define TRINITY_FILEVERSION_STR         "@rev_hash@ @rev_date@ (@rev_branch@ branch)"
 #define TRINITY_PRODUCTVERSION          TRINITY_FILEVERSION
 #define TRINITY_PRODUCTVERSION_STR      TRINITY_FILEVERSION_STR
 
+<<<<<<< HEAD
 #endif // TRINITYCORE_REVISION_DATA_H
+=======
+#endif // TRINITYCORE_REVISION_DATA_H
+>>>>>>> upstream/3.3.5

@@ -266,6 +266,14 @@ class spell_dalaran_teleport_to_dalaran : public SpellScript
 {
     PrepareSpellScript(spell_dalaran_teleport_to_dalaran);
 
+<<<<<<< HEAD
+=======
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_TELEPORT_TO_DALARAN });
+    }
+
+>>>>>>> upstream/3.3.5
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         GetHitUnit()->CastSpell(GetHitUnit(), SPELL_TELEPORT_TO_DALARAN);
@@ -287,6 +295,14 @@ class spell_dalaran_teleport_to_lake_wintergrasp : public SpellScript
 {
     PrepareSpellScript(spell_dalaran_teleport_to_lake_wintergrasp);
 
+<<<<<<< HEAD
+=======
+    bool Validate(SpellInfo const* /*spellInfo*/) override
+    {
+        return ValidateSpellInfo({ SPELL_TELEPORT_TO_LAKE_WINTERGRASP });
+    }
+
+>>>>>>> upstream/3.3.5
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
         GetHitUnit()->CastSpell(GetHitUnit(), SPELL_TELEPORT_TO_LAKE_WINTERGRASP);

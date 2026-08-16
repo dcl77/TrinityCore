@@ -81,6 +81,7 @@ class TC_GAME_API ChatHandler
             return PGetParseString(GetTrinityString(entry), std::forward<Args>(args)...);
         }
 
+<<<<<<< HEAD
         void SendErrorMessage(uint32 entry);
         void SendErrorMessage(std::string_view str, bool escapeCharacters);
 
@@ -98,6 +99,8 @@ class TC_GAME_API ChatHandler
             SetSentErrorMessage(true);
         }
 
+=======
+>>>>>>> upstream/3.3.5
         static std::string StringVPrintf(std::string_view messageFormat, fmt::printf_args messageFormatArgs);
 
         bool _ParseCommands(std::string_view text);

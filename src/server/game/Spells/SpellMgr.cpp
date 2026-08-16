@@ -2966,16 +2966,24 @@ void SpellMgr::LoadSpellInfoCorrections()
             52562, // Arthas Zombie Catcher
             57550, // Tirion Aggro
             65755
+<<<<<<< HEAD
             }, [](SpellInfo* spellInfo)
             {
                 spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
             });
+=======
+        }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
+        });
+>>>>>>> upstream/3.3.5
 
         ApplySpellFix({
             24707, // Food
             26263, // Dim Sum
             29055, // Refreshing Red Apple
             37504  // Karazhan - Chess NPC AI, action timer
+<<<<<<< HEAD
             }, [](SpellInfo* spellInfo)
             {
                 // first effect has correct amplitude
@@ -3001,6 +3009,33 @@ void SpellMgr::LoadSpellInfoCorrections()
                 spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
                 spellInfo->_GetEffect(EFFECT_2).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
             });
+=======
+        }, [](SpellInfo* spellInfo)
+        {
+            // first effect has correct amplitude
+            spellInfo->_GetEffect(EFFECT_1).ApplyAuraPeriod = spellInfo->GetEffect(EFFECT_0).ApplyAuraPeriod;
+        });
+
+        // Vomit
+        ApplySpellFix({ 43327 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->_GetEffect(EFFECT_1).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
+        });
+
+        // Strider Presence
+        ApplySpellFix({ 4312 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
+            spellInfo->_GetEffect(EFFECT_1).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
+        });
+
+        // Food
+        ApplySpellFix({ 64345 }, [](SpellInfo* spellInfo)
+        {
+            spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
+            spellInfo->_GetEffect(EFFECT_2).ApplyAuraPeriod = 1 * IN_MILLISECONDS;
+        });
+>>>>>>> upstream/3.3.5
     }
 
     // specific code for cases with no trigger spell provided in field
@@ -3013,9 +3048,15 @@ void SpellMgr::LoadSpellInfoCorrections()
 
         // Feed Captured Animal
         ApplySpellFix({ 29917 }, [](SpellInfo* spellInfo)
+<<<<<<< HEAD
             {
                 spellInfo->_GetEffect(EFFECT_0).TriggerSpell = 29916;
             });
+=======
+        {
+            spellInfo->_GetEffect(EFFECT_0).TriggerSpell = 29916;
+        });
+>>>>>>> upstream/3.3.5
 
         // Eye of Grillok
         ApplySpellFix({ 38495 }, [](SpellInfo* spellInfo)
@@ -3074,10 +3115,17 @@ void SpellMgr::LoadSpellInfoCorrections()
         47810,
         47811
         }, [](SpellInfo* spellInfo)
+<<<<<<< HEAD
         {
             // copy SP scaling data from direct damage to DoT
             spellInfo->_GetEffect(EFFECT_0).BonusCoefficient = spellInfo->GetEffect(EFFECT_1).BonusCoefficient;
         });
+=======
+    {
+        // copy SP scaling data from direct damage to DoT
+        spellInfo->_GetEffect(EFFECT_0).BonusCoefficient = spellInfo->GetEffect(EFFECT_1).BonusCoefficient;
+    });
+>>>>>>> upstream/3.3.5
 
     // Detect Undead
     ApplySpellFix({ 11389 }, [](SpellInfo* spellInfo)
@@ -3156,10 +3204,17 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Missile Barrage
     ApplySpellFix({ 44401 }, [](SpellInfo* spellInfo)
+<<<<<<< HEAD
         {
             // should be consumed before Clearcasting
             spellInfo->Priority = 100;
         });
+=======
+    {
+        // should be consumed before Clearcasting
+        spellInfo->Priority = 100;
+    });
+>>>>>>> upstream/3.3.5
 
     ApplySpellFix({
         42818, // Headless Horseman - Wisp Flight Port
@@ -3482,9 +3537,15 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Crafty's Ultra-Advanced Proto-Typical Shortening Blaster
     ApplySpellFix({ 51912 }, [](SpellInfo* spellInfo)
+<<<<<<< HEAD
         {
             spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 3000;
         });
+=======
+    {
+        spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 3000;
+    });
+>>>>>>> upstream/3.3.5
 
     // Desecration Arm - 36 instead of 37 - typo? :/
     ApplySpellFix({ 29809 }, [](SpellInfo* spellInfo)
@@ -3510,6 +3571,15 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             spellInfo->_GetEffect(EFFECT_0).RadiusEntry = sSpellRadiusStore.LookupEntry(EFFECT_RADIUS_150_YARDS); // 150yd
         });
+
+    // Radius in DBC is not enough
+    ApplySpellFix({
+        36854, // Channel
+        36856  // Channel
+    }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(5); // 40yd
+    });
 
     // Radius in DBC is not enough
     ApplySpellFix({
@@ -3649,6 +3719,12 @@ void SpellMgr::LoadSpellInfoCorrections()
             spellInfo->AttributesEx4 |= SPELL_ATTR4_FIXED_DAMAGE;
             spellInfo->AttributesEx6 |= SPELL_ATTR6_LIMIT_PCT_DAMAGE_MODS;
         });
+
+    // Dispersion
+    ApplySpellFix({ 60069 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_0).MiscValue = POWER_MANA;
+    });
 
     // Improved Devouring Plague
     ApplySpellFix({ 63675 }, [](SpellInfo* spellInfo)
@@ -4392,9 +4468,15 @@ void SpellMgr::LoadSpellInfoCorrections()
 
     // Swarming Shadows
     ApplySpellFix({ 71266, 72890 }, [](SpellInfo* spellInfo)
+<<<<<<< HEAD
         {
             spellInfo->RequiredAreasID = 0; // originally, these require area 4522, which is... outside of Icecrown Citadel
         });
+=======
+    {
+        spellInfo->RequiredAreasID = 0; // originally, these require area 4522, which is... outside of Icecrown Citadel
+    });
+>>>>>>> upstream/3.3.5
 
     // Corruption
     ApplySpellFix({ 70602 }, [](SpellInfo* spellInfo)
@@ -4729,10 +4811,17 @@ void SpellMgr::LoadSpellInfoCorrections()
             // Bad DBC data? Copying 25820 here due to spell description
             // either is a periodic with chance on tick, or a proc
 
+<<<<<<< HEAD
             spellInfo->_GetEffect(EFFECT_0).ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
             spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 0;
             spellInfo->ProcChance = 10;
         });
+=======
+        spellInfo->_GetEffect(EFFECT_0).ApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        spellInfo->_GetEffect(EFFECT_0).ApplyAuraPeriod = 0;
+        spellInfo->ProcChance = 10;
+    });
+>>>>>>> upstream/3.3.5
 
     // Survey Sinkholes
     ApplySpellFix({ 45853 }, [](SpellInfo* spellInfo)
@@ -4983,6 +5072,52 @@ void SpellMgr::LoadSpellInfoCorrections()
         spellInfo->_GetEffect(EFFECT_1).TriggerSpell    = 24870;
     });
 
+    // Pilgrim's Bounty - Candied Sweet Potato
+    ApplySpellFix({ 65418 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_2).TriggerSpell = 65410;
+    });
+
+    // Pilgrim's Bounty - Spice Bread Stuffing
+    ApplySpellFix({ 65419 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_2).TriggerSpell = 65416;
+    });
+
+    // Pilgrim's Bounty - Cranberry Chutney
+    ApplySpellFix({ 65420 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_2).TriggerSpell = 65412;
+    });
+
+    // Pilgrim's Bounty - Pumpkin Pie
+    ApplySpellFix({ 65421 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_2).TriggerSpell = 65415;
+    });
+
+    // Pilgrim's Bounty - Slow-Roasted Turkey
+    ApplySpellFix({ 65422 }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_2).TriggerSpell = 65414;
+    });
+
+    ApplySpellFix({
+        24869, // Bobbing Apple, Bread of the Dead, Winter Veil Cookie
+        61874, // Noblegarden Chocolate
+        71068, // Sweet Surprise
+        71071, // Very Berry Cream
+        71073, // Dark Desire
+        71074  // Buttermilk Delight
+    }, [](SpellInfo* spellInfo)
+    {
+        spellInfo->_GetEffect(EFFECT_1).Effect          = SPELL_EFFECT_APPLY_AURA;
+        spellInfo->_GetEffect(EFFECT_1).TargetA         = SpellImplicitTargetInfo(TARGET_UNIT_CASTER);
+        spellInfo->_GetEffect(EFFECT_1).ApplyAuraName   = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+        spellInfo->_GetEffect(EFFECT_1).ApplyAuraPeriod = 10 * IN_MILLISECONDS;
+        spellInfo->_GetEffect(EFFECT_1).TriggerSpell    = 24870;
+    });
+
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
         SpellInfo* spellInfo = mSpellInfoMap[i];
@@ -5011,6 +5146,7 @@ void SpellMgr::LoadSpellInfoCorrections()
         {
             switch (spellEffectInfo.Effect)
             {
+<<<<<<< HEAD
             case SPELL_EFFECT_CHARGE:
             case SPELL_EFFECT_CHARGE_DEST:
             case SPELL_EFFECT_JUMP:
@@ -5032,6 +5168,23 @@ void SpellMgr::LoadSpellInfoCorrections()
                 break;
             default:
                 break;
+=======
+                case SPELL_EFFECT_CHARGE:
+                case SPELL_EFFECT_CHARGE_DEST:
+                case SPELL_EFFECT_JUMP:
+                case SPELL_EFFECT_JUMP_DEST:
+                case SPELL_EFFECT_LEAP_BACK:
+                    if (!spellInfo->Speed && !spellInfo->SpellFamilyName)
+                        spellInfo->Speed = SPEED_CHARGE;
+                    break;
+                case SPELL_EFFECT_APPLY_AURA:
+                    // special aura updates each 30 seconds
+                    if (spellEffectInfo.ApplyAuraName == SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR)
+                        spellEffectInfo.ApplyAuraPeriod = 30 * IN_MILLISECONDS;
+                    break;
+                default:
+                    break;
+>>>>>>> upstream/3.3.5
             }
 
             // Passive talent auras cannot target pets

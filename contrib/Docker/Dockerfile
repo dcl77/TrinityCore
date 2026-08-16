@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 FROM trinitycore/circle-ci:debian-12-runner
+=======
+FROM trinitycore/circle-ci:debian-13-runner
+>>>>>>> upstream/3.3.5
 
 #Setup
 WORKDIR /home/circleci

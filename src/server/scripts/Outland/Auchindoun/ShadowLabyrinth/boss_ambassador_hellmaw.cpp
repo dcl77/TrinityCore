@@ -47,7 +47,13 @@ enum HellmawEvents
     EVENT_INTRO_2
 };
 
+<<<<<<< HEAD
 enum HellmawMisc
+=======
+static constexpr uint32 PATH_ESCORT_HELLMAW = 149850;
+
+struct boss_ambassador_hellmaw : public EscortAI
+>>>>>>> upstream/3.3.5
 {
     PATH_INTRO              = 669990,
     SOUND_INTRO             = 9349
@@ -92,6 +98,30 @@ struct boss_ambassador_hellmaw : public BossAI
         }
     }
 
+<<<<<<< HEAD
+=======
+    void DoIntro()
+    {
+        if (_intro)
+            return;
+
+        _intro = true;
+
+        if (me->HasAura(SPELL_BANISH))
+            me->RemoveAurasDueToSpell(SPELL_BANISH);
+
+        Talk(SAY_INTRO);
+        LoadPath(PATH_ESCORT_HELLMAW);
+        Start(true, ObjectGuid::Empty, nullptr, false, true);
+    }
+
+    void JustEngagedWith(Unit* /*who*/) override
+    {
+        _instance->SetBossState(DATA_AMBASSADOR_HELLMAW, IN_PROGRESS);
+        Talk(SAY_AGGRO);
+    }
+
+>>>>>>> upstream/3.3.5
     void KilledUnit(Unit* who) override
     {
         if (who->GetTypeId() == TYPEID_PLAYER)

@@ -16,7 +16,11 @@
  */
 
 #include "BattlegroundIC.h"
+<<<<<<< HEAD
 #include "CustomConfig.h"
+=======
+#include "BattlegroundPackets.h"
+>>>>>>> upstream/3.3.5
 #include "GameObject.h"
 #include "Log.h"
 #include "Map.h"
@@ -24,14 +28,11 @@
 #include "ScriptedCreature.h"
 #include "Transport.h"
 #include "Vehicle.h"
-#include "WorldPacket.h"
 #include "WorldStatePackets.h"
 
-void BattlegroundICScore::BuildObjectivesBlock(WorldPacket& data)
+void BattlegroundICScore::BuildObjectivesBlock(WorldPackets::Battleground::PVPLogData_Player& playerData)
 {
-    data << uint32(2); // Objectives Count
-    data << uint32(BasesAssaulted);
-    data << uint32(BasesDefended);
+    playerData.Stats = { BasesAssaulted, BasesDefended };
 }
 
 BattlegroundIC::BattlegroundIC()

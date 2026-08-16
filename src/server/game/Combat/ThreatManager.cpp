@@ -288,7 +288,11 @@ uint32 ThreatManager::GetThreatListPlayerCount(bool includeOffline/* = false*/) 
         return uint32(_sortedThreatList->size());
     uint32 returnValue = 0;
     for (ThreatReference const* ref : *_sortedThreatList)
+<<<<<<< HEAD
         if (ref->IsAvailable() && ref->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+=======
+        if (ref->IsAvailable() && ref->GetVictim()->GetTypeId() == TYPEID_PLAYER)
+>>>>>>> upstream/3.3.5
             ++returnValue;
     return returnValue;
 }

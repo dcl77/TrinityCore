@@ -25,6 +25,7 @@ namespace WorldPackets
 {
     namespace Channel
     {
+<<<<<<< HEAD
         class ChannelListRequest final : public ClientPacket
         {
         public:
@@ -35,6 +36,8 @@ namespace WorldPackets
             std::string ChannelName;
         };
 
+=======
+>>>>>>> upstream/3.3.5
         class ChannelListResponse final : public ServerPacket
         {
         public:
@@ -76,6 +79,41 @@ namespace WorldPackets
             bool Suspended            = false;
         };
 
+<<<<<<< HEAD
+=======
+        class ChannelCommand final : public ClientPacket
+        {
+        public:
+            explicit ChannelCommand(WorldPacket&& packet);
+
+            void Read() override;
+
+            std::string ChannelName;
+        };
+
+        class ChannelPlayerCommand final : public ClientPacket
+        {
+        public:
+            explicit ChannelPlayerCommand(WorldPacket&& packet);
+
+            void Read() override;
+
+            std::string ChannelName;
+            std::string Name;
+        };
+
+        class ChannelPassword final : public ClientPacket
+        {
+        public:
+            explicit ChannelPassword(WorldPacket&& packet) : ClientPacket(CMSG_CHANNEL_PASSWORD, std::move(packet)) { }
+
+            void Read() override;
+
+            std::string ChannelName;
+            std::string Password;
+        };
+
+>>>>>>> upstream/3.3.5
         class JoinChannel final : public ClientPacket
         {
         public:
@@ -100,6 +138,21 @@ namespace WorldPackets
             int32 ZoneChannelID = 0;
             std::string ChannelName;
         };
+<<<<<<< HEAD
+=======
+
+        class ChannelMemberCount final : public ServerPacket
+        {
+        public:
+            ChannelMemberCount() : ServerPacket(SMSG_CHANNEL_MEMBER_COUNT, 30 + 1 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            uint8 _ChannelFlags = 0; ///< @see enum ChannelFlags
+            uint32 MemberCount = 0;
+            std::string ChannelName;
+        };
+>>>>>>> upstream/3.3.5
     }
 }
 

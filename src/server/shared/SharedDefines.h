@@ -136,6 +136,7 @@ enum Races
      (1<<(RACE_GNOME-1))         | \
      (1<<(RACE_TROLL-1))         | \
      (1<<(RACE_BLOODELF-1))      | \
+<<<<<<< HEAD
      (1<<(RACE_DRAENEI-1))       | \
      (1 << (RACE_GOBLIN - 1))    | \
      (1 << (RACE_WORGEN - 1)))
@@ -148,6 +149,17 @@ enum Races
      (1<<(RACE_WORGEN-1))    | \
      (1<<(RACE_DRAENEI-1)))
 
+=======
+     (1<<(RACE_DRAENEI-1)))
+
+#define RACEMASK_ALLIANCE     \
+    ((1<<(RACE_HUMAN-1))    | \
+     (1<<(RACE_DWARF-1))    | \
+     (1<<(RACE_NIGHTELF-1)) | \
+     (1<<(RACE_GNOME-1))    | \
+     (1<<(RACE_DRAENEI-1)))
+
+>>>>>>> upstream/3.3.5
 #define RACEMASK_HORDE RACEMASK_ALL_PLAYABLE & ~RACEMASK_ALLIANCE
 
 // Class value is index in ChrClasses.dbc
@@ -327,8 +339,7 @@ enum Powers : int8
     POWER_HAPPINESS                     = 4,  // TITLE Happiness
     POWER_RUNE                          = 5,  // TITLE Runes
     POWER_RUNIC_POWER                   = 6,  // TITLE Runic Power
-    MAX_POWERS                          = 7,  // SKIP
-    POWER_ALL                           = 127 // SKIP
+    MAX_POWERS                          = 7   // SKIP
 };
 
 #define MAX_RUNES 6
@@ -2885,20 +2896,31 @@ enum HolidayIds
     HOLIDAY_KALU_AK_FISHING_DERBY    = 424
 };
 
-// values based at QuestInfo.dbc
-enum QuestTypes
+enum QuestType
 {
-    QUEST_TYPE_ELITE               = 1,
-    QUEST_TYPE_LIFE                = 21,
-    QUEST_TYPE_PVP                 = 41,
-    QUEST_TYPE_RAID                = 62,
-    QUEST_TYPE_DUNGEON             = 81,
-    QUEST_TYPE_WORLD_EVENT         = 82,
-    QUEST_TYPE_LEGENDARY           = 83,
-    QUEST_TYPE_ESCORT              = 84,
-    QUEST_TYPE_HEROIC              = 85,
-    QUEST_TYPE_RAID_10             = 88,
-    QUEST_TYPE_RAID_25             = 89
+    QUEST_TYPE_TURNIN               = 0,
+    QUEST_TYPE_WITH_MAX_LEVEL       = 1,
+    QUEST_TYPE_NORMAL               = 2,
+    MAX_DB_ALLOWED_QUEST_TYPES      = 3,
+
+    // values used in quest menu packets
+    QUEST_TYPE_IN_PROGRESS          = 4,
+};
+
+// values based at QuestInfo.dbc
+enum QuestInfo
+{
+    QUEST_INFO_ELITE               = 1,
+    QUEST_INFO_LIFE                = 21,
+    QUEST_INFO_PVP                 = 41,
+    QUEST_INFO_RAID                = 62,
+    QUEST_INFO_DUNGEON             = 81,
+    QUEST_INFO_WORLD_EVENT         = 82,
+    QUEST_INFO_LEGENDARY           = 83,
+    QUEST_INFO_ESCORT              = 84,
+    QUEST_INFO_HEROIC              = 85,
+    QUEST_INFO_RAID_10             = 88,
+    QUEST_INFO_RAID_25             = 89
 };
 
 // values based at QuestSort.dbc
@@ -3209,12 +3231,12 @@ enum UnitDynFlags
     UNIT_DYNFLAG_NONE                       = 0x0000,
     UNIT_DYNFLAG_LOOTABLE                   = 0x0001,
     UNIT_DYNFLAG_TRACK_UNIT                 = 0x0002,
-    UNIT_DYNFLAG_TAPPED                     = 0x0004,       // Lua_UnitIsTapped
-    UNIT_DYNFLAG_TAPPED_BY_PLAYER           = 0x0008,       // Lua_UnitIsTappedByPlayer
+    UNIT_DYNFLAG_TAPPED                     = 0x0004, // Lua_UnitIsTapped
+    UNIT_DYNFLAG_TAPPED_BY_PLAYER           = 0x0008, // Lua_UnitIsTappedByPlayer
     UNIT_DYNFLAG_SPECIALINFO                = 0x0010,
     UNIT_DYNFLAG_DEAD                       = 0x0020,
     UNIT_DYNFLAG_REFER_A_FRIEND             = 0x0040,
-    UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST  = 0x0080        // Lua_UnitIsTappedByAllThreatList
+    UNIT_DYNFLAG_TAPPED_BY_ALL_THREAT_LIST  = 0x0080  // Lua_UnitIsTappedByAllThreatList
 };
 
 enum CorpseDynFlags
@@ -3293,7 +3315,11 @@ enum ChatMsg : uint8
     CHAT_MSG_GUILD_ACHIEVEMENT      = 0x31,
     CHAT_MSG_ARENA_POINTS           = 0x32,
     CHAT_MSG_PARTY_LEADER           = 0x33,
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> upstream/3.3.5
     MAX_CHAT_MSG_TYPE
 };
 
@@ -3301,12 +3327,21 @@ enum ChatMsg : uint8
 
 enum PlayerChatTag
 {
+<<<<<<< HEAD
     CHAT_TAG_NONE = 0x00,
     CHAT_TAG_AFK = 0x01,
     CHAT_TAG_DND = 0x02,
     CHAT_TAG_GM = 0x04,
     CHAT_TAG_COM = 0x08, // Commentator
     CHAT_TAG_DEV = 0x10
+=======
+    CHAT_TAG_NONE       = 0x00,
+    CHAT_TAG_AFK        = 0x01,
+    CHAT_TAG_DND        = 0x02,
+    CHAT_TAG_GM         = 0x04,
+    CHAT_TAG_COM        = 0x08, // Commentator
+    CHAT_TAG_DEV        = 0x10
+>>>>>>> upstream/3.3.5
 };
 
 enum ChatLinkColors : uint32
@@ -3354,7 +3389,7 @@ enum AiReaction
 // Diminishing Returns Types
 enum DiminishingReturnsType
 {
-    DRTYPE_NONE         = 0,                                // this spell is not diminished, but may have limited it's duration to 10s
+    DRTYPE_NONE         = 0,                                // this spell is not diminished, but may have its duration limited
     DRTYPE_PLAYER       = 1,                                // this spell is diminished only when applied on players
     DRTYPE_ALL          = 2                                 // this spell is diminished in every case
 };
@@ -3761,22 +3796,31 @@ enum DuelCompleteType : uint8
     DUEL_FLED        = 2
 };
 
-// handle the queue types and bg types separately to enable joining queue for different sized arenas at the same time
-enum BattlegroundQueueTypeId
+struct BattlegroundQueueTypeId
 {
-    BATTLEGROUND_QUEUE_NONE     = 0,
-    BATTLEGROUND_QUEUE_AV       = 1,
-    BATTLEGROUND_QUEUE_WS       = 2,
-    BATTLEGROUND_QUEUE_AB       = 3,
-    BATTLEGROUND_QUEUE_EY       = 4,
-    BATTLEGROUND_QUEUE_SA       = 5,
-    BATTLEGROUND_QUEUE_IC       = 6,
-    BATTLEGROUND_QUEUE_RB       = 7,
-    BATTLEGROUND_QUEUE_2v2      = 8,
-    BATTLEGROUND_QUEUE_3v3      = 9,
-    BATTLEGROUND_QUEUE_5v5      = 10,
-    MAX_BATTLEGROUND_QUEUE_TYPES
+    uint16 BattlemasterListId;
+    uint8 BracketId;
+    uint8 TeamSize;
+
+    static constexpr BattlegroundQueueTypeId FromPacked(uint64 packedQueueId)
+    {
+        return { .BattlemasterListId = uint16((packedQueueId >> 16) & 0xFFFF), .BracketId = uint8((packedQueueId >> 8) & 0x7F), .TeamSize = uint8(packedQueueId & 0x7F) };
+    }
+
+    constexpr uint64 GetPacked() const
+    {
+        return (uint64(BattlemasterListId) << 16)
+            | (uint64(BracketId & 0xFF) << 8)
+            | (uint64(TeamSize & 0x3F))
+            | UI64LIT(0x1F90000000000000);
+    }
+
+    constexpr bool operator==(BattlegroundQueueTypeId const& right) const = default;
+
+    constexpr std::strong_ordering operator<=>(BattlegroundQueueTypeId const& right) const = default;
 };
+
+constexpr BattlegroundQueueTypeId BATTLEGROUND_QUEUE_NONE = { 0, 0, 0 };
 
 enum GroupJoinBattlegroundResult
 {

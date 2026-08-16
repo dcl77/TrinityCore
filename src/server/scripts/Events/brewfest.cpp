@@ -631,6 +631,7 @@ class spell_brewfest_botm_teach_language : public SpellScript
     }
 };
 
+<<<<<<< HEAD
 enum fillKeg
 {
     GREEN_EMPTY_KEG = 37892,
@@ -736,6 +737,8 @@ class spell_brewfest_unfill_keg : public SpellScript
     }
 };
 
+=======
+>>>>>>> upstream/3.3.5
 enum BartlettsBitterBrew
 {
     SPELL_BOTM_VOMIT_BREW_VOMIT_VISUAL    = 49867

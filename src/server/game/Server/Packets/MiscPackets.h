@@ -196,6 +196,53 @@ namespace WorldPackets
             explicit TutorialReset(WorldPacket&& packet) : ClientPacket(CMSG_TUTORIAL_RESET, std::move(packet)) { }
 
             void Read() override { }
+<<<<<<< HEAD
+=======
+        };
+
+        class SetDungeonDifficulty final : public ClientPacket
+        {
+        public:
+            explicit SetDungeonDifficulty(WorldPacket&& packet) : ClientPacket(MSG_SET_DUNGEON_DIFFICULTY, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 DifficultyID = 0;
+        };
+
+        class SetRaidDifficulty final : public ClientPacket
+        {
+        public:
+            explicit SetRaidDifficulty(WorldPacket&& packet) : ClientPacket(MSG_SET_RAID_DIFFICULTY, std::move(packet)) { }
+
+            void Read() override;
+
+            int32 DifficultyID = 0;
+        };
+
+        class DungeonDifficultySet final : public ServerPacket
+        {
+        public:
+            explicit DungeonDifficultySet() : ServerPacket(MSG_SET_DUNGEON_DIFFICULTY, 4 + 4 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            int32 DifficultyID = 0;
+            int32 ChangeCurrentDifficulyID = 0;
+            int32 ChangeGroupDifficulyID = 0;
+        };
+
+        class RaidDifficultySet final : public ServerPacket
+        {
+        public:
+            explicit RaidDifficultySet() : ServerPacket(MSG_SET_RAID_DIFFICULTY, 4 + 4 + 4) { }
+
+            WorldPacket const* Write() override;
+
+            int32 DifficultyID = 0;
+            int32 ChangeCurrentDifficulyID = 0;
+            int32 ChangeGroupDifficulyID = 0;
+>>>>>>> upstream/3.3.5
         };
 
         class CorpseReclaimDelay : public ServerPacket

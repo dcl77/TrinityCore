@@ -71,12 +71,20 @@ BEGIN
         BLOCK "080004b0"
         BEGIN
             VALUE "CompanyName",        TRINITY_COMPANYNAME_STR
+<<<<<<< HEAD
             VALUE "FileDescription",    "Ctulhunet.ru Authentication Server Daemon"
+=======
+            VALUE "FileDescription",    "TrinityCore Authentication Server Daemon"
+>>>>>>> upstream/3.3.5
             VALUE "FileVersion",        TRINITY_FILEVERSION_STR
             VALUE "InternalName",       "authserver"
             VALUE "LegalCopyright",     TRINITY_LEGALCOPYRIGHT_STR
             VALUE "OriginalFilename",   "authserver.exe"
+<<<<<<< HEAD
             VALUE "ProductName",        "Ctulhunet.ru Authentication Server"
+=======
+            VALUE "ProductName",        "TrinityCore Authentication Server"
+>>>>>>> upstream/3.3.5
             VALUE "ProductVersion",     TRINITY_PRODUCTVERSION_STR
         END
     END

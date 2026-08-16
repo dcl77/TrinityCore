@@ -71,12 +71,20 @@ BEGIN
         BLOCK "080004b0"
         BEGIN
             VALUE "CompanyName",        TRINITY_COMPANYNAME_STR
+<<<<<<< HEAD
             VALUE "FileDescription",    "Ctulhunet.ru World Server Daemon"
+=======
+            VALUE "FileDescription",    "TrinityCore World Server Daemon"
+>>>>>>> upstream/3.3.5
             VALUE "FileVersion",        TRINITY_FILEVERSION_STR
             VALUE "InternalName",       "worldserver"
             VALUE "LegalCopyright",     TRINITY_LEGALCOPYRIGHT_STR
             VALUE "OriginalFilename",   "worldserver.exe"
+<<<<<<< HEAD
             VALUE "ProductName",        "Ctulhunet.ru World Server"
+=======
+            VALUE "ProductName",        "TrinityCore World Server"
+>>>>>>> upstream/3.3.5
             VALUE "ProductVersion",     TRINITY_PRODUCTVERSION_STR
         END
     END

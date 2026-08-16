@@ -25,7 +25,10 @@
  */
 
 #include "ScriptMgr.h"
+<<<<<<< HEAD
 #include "Containers.h"
+=======
+>>>>>>> upstream/3.3.5
 #include "InstanceScript.h"
 #include "MotionMaster.h"
 #include "ObjectAccessor.h"
@@ -175,11 +178,16 @@ enum ZuljinMisc
     NPC_FEATHER_VORTEX            = 24136
 };
 
+<<<<<<< HEAD
 const Position CenterPos = { 120.172f, 706.444f, 45.111374f, 0.0f };
+=======
+static Position const CenterPos = { 120.172f, 706.444f, 45.111374f, 0.0f };
+>>>>>>> upstream/3.3.5
 
 struct BossPhase
 {
     uint32 spiritSpellId;
+<<<<<<< HEAD
     uint32 sayId, emoteId;
     uint32 spiritId;
     uint8 phaseGroup;
@@ -194,6 +202,22 @@ static const BossPhase ZuljinPhases[] =
 };
 
 uint32 const SpiritData[] =
+=======
+    uint8 sayId, emoteId;
+    uint8 phaseGroup;
+    uint32 spiritId;
+};
+
+static constexpr BossPhase ZuljinPhases[] =
+{
+    { SPELL_SHAPE_OF_THE_BEAR,       SAY_TRANSFORM_TO_BEAR,       EMOTE_BEAR_SPIRIT,       EVENT_GROUP_TROLL_PHASE, DATA_BEAR_SPIRIT       },
+    { SPELL_SHAPE_OF_THE_EAGLE,      SAY_TRANSFORM_TO_EAGLE,      EMOTE_EAGLE_SPIRIT,      EVENT_GROUP_BEAR_PHASE,  DATA_EAGLE_SPIRIT      },
+    { SPELL_SHAPE_OF_THE_LYNX,       SAY_TRANSFORM_TO_LYNX,       EMOTE_LYNX_SPIRIT,       EVENT_GROUP_EAGLE_PHASE, DATA_LYNX_SPIRIT       },
+    { SPELL_SHAPE_OF_THE_DRAGONHAWK, SAY_TRANSFORM_TO_DRAGONHAWK, EMOTE_DRAGONHAWK_SPIRIT, EVENT_GROUP_LYNX_PHASE,  DATA_DRAGONHAWK_SPIRIT }
+};
+
+static constexpr uint32 SpiritData[] =
+>>>>>>> upstream/3.3.5
 {
     DATA_BEAR_SPIRIT,
     DATA_EAGLE_SPIRIT,
@@ -236,6 +260,7 @@ struct boss_zuljin : public BossAI
         {
             _isInTransition = true;
             events.ScheduleEvent(EVENT_TRANSITION_1, 0s);
+<<<<<<< HEAD
         }
     }
 
@@ -286,6 +311,63 @@ struct boss_zuljin : public BossAI
             if (Player* target = ObjectAccessor::GetPlayer(*me, _clawRageVictimGUID))
                 me->GetThreatManager().AddThreat(target, -50000000.0f, nullptr, true, true);
         }
+=======
+        }
+    }
+
+    void MovementInform(uint32 type, uint32 pointId) override
+    {
+        if (type == POINT_MOTION_TYPE && pointId == POINT_CENTER)
+            events.ScheduleEvent(EVENT_TRANSITION_2, 0s);
+    }
+
+    void SpellHit(WorldObject* /*caster*/, SpellInfo const* spellInfo) override
+    {
+        switch (spellInfo->Id)
+        {
+            case SPELL_SHAPE_OF_THE_BEAR:
+            case SPELL_SHAPE_OF_THE_EAGLE:
+            case SPELL_SHAPE_OF_THE_LYNX:
+            case SPELL_SHAPE_OF_THE_DRAGONHAWK:
+                events.ScheduleEvent(EVENT_TRANSITION_4, 0s);
+                break;
+            default:
+                break;
+        }
+    }
+
+    void SpellHitTarget(WorldObject* target, SpellInfo const* spellInfo) override
+    {
+        switch (spellInfo->Id)
+        {
+            case SPELL_LYNX_RUSH_DAMAGE:
+                ++_currentRushCount;
+                if (_currentRushCount != _rushCounter)
+                {
+                    DoCastSelf(SPELL_LYNX_RUSH, true);
+                }
+                else
+                {
+                    _rushCounter = urand(4, 10);
+                    _currentRushCount = 0;
+                }
+                break;
+            case SPELL_CLAW_RAGE:
+                if (target->IsPlayer())
+                {
+                    _clawRageVictimGUID = target->GetGUID();
+                    me->GetThreatManager().AddThreat(target->ToUnit(), 50000000.0f, nullptr, true, true);
+                }
+                break;
+        }
+    }
+
+    void DoAction(int32 action) override
+    {
+        if (action == ACTION_CLEAR_FIXATE)
+            if (Unit* target = ObjectAccessor::GetUnit(*me, _clawRageVictimGUID))
+                me->GetThreatManager().AddThreat(target, -50000000.0f, nullptr, true, true);
+>>>>>>> upstream/3.3.5
     }
 
     void ScheduleEventsForPhase()
@@ -314,6 +396,11 @@ struct boss_zuljin : public BossAI
                 events.ScheduleEvent(EVENT_FLAME_BREATH, 5s, 10s);
                 events.ScheduleEvent(EVENT_PILLAR_OF_FIRE, 5s, 10s);
                 break;
+<<<<<<< HEAD
+=======
+            default:
+                break;
+>>>>>>> upstream/3.3.5
         }
     }
 
@@ -334,8 +421,13 @@ struct boss_zuljin : public BossAI
 
     void EnterEvadeMode(EvadeReason /*why*/) override
     {
+<<<<<<< HEAD
         for (uint32 SpiritsData : SpiritData)
             if (Creature* spirit = instance->GetCreature(SpiritsData))
+=======
+        for (uint32 spiritId : SpiritData)
+            if (Creature* spirit = instance->GetCreature(spiritId))
+>>>>>>> upstream/3.3.5
                 spirit->AI()->DoAction(ACTION_CANCEL_SPIRIT_DRAINED);
 
         summons.DespawnAll();

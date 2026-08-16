@@ -122,12 +122,17 @@ void WorldSession::HandleLeaveChannel(WorldPackets::Channel::LeaveChannel& packe
     }
 }
 
+<<<<<<< HEAD
 void WorldSession::HandleChannelList(WorldPackets::Channel::ChannelListRequest& packet)
+=======
+void WorldSession::HandleChannelCommand(WorldPackets::Channel::ChannelCommand& packet)
+>>>>>>> upstream/3.3.5
 {
     TC_LOG_DEBUG("chat.system", "{} {} ChannelName: {}",
         GetOpcodeNameForLogging(packet.GetOpcode()), GetPlayerInfo(), packet.ChannelName);
 
     if (Channel* channel = ChannelMgr::GetChannelForPlayerByNamePart(packet.ChannelName, GetPlayer()))
+<<<<<<< HEAD
         channel->List(GetPlayer());
 }
 
@@ -314,29 +319,118 @@ void WorldSession::HandleGetChannelMemberCount(WorldPacket &recvPacket)
         GetPlayerInfo(), channelName);
 
     if (Channel* channel = ChannelMgr::GetChannelForPlayerByNamePart(channelName, GetPlayer()))
+=======
+>>>>>>> upstream/3.3.5
     {
-        TC_LOG_DEBUG("chat.system", "SMSG_CHANNEL_MEMBER_COUNT {} Channel: {} Count: {}",
-            GetPlayerInfo(), channelName, channel->GetNumPlayers());
-
-        std::string name = channel->GetName(GetSessionDbcLocale());
-        WorldPacket data(SMSG_CHANNEL_MEMBER_COUNT, name.size() + 1 + 4);
-        data << name;
-        data << uint8(channel->GetFlags());
-        data << uint32(channel->GetNumPlayers());
-        SendPacket(&data);
+        switch (packet.GetOpcode())
+        {
+            case CMSG_CHANNEL_ANNOUNCEMENTS:
+                channel->Announce(GetPlayer());
+                break;
+            case CMSG_DECLINE_CHANNEL_INVITE:
+                channel->DeclineInvite(GetPlayer());
+                break;
+            case CMSG_CHANNEL_DISPLAY_LIST:
+            case CMSG_CHANNEL_LIST:
+                channel->List(GetPlayer());
+                break;
+            case CMSG_CHANNEL_OWNER:
+                channel->SendWhoOwner(GetPlayer());
+                break;
+            case CMSG_GET_CHANNEL_MEMBER_COUNT:
+                channel->SendMemberCount(GetPlayer());
+                break;
+            case CMSG_CHANNEL_VOICE_ON:
+                channel->VoiceOn(GetPlayer());
+                break;
+            case CMSG_CHANNEL_VOICE_OFF:
+                channel->VoiceOff(GetPlayer());
+                break;
+            case CMSG_SET_CHANNEL_WATCH:
+                // channel->JoinNotify(GetPlayer());
+                break;
+            default:
+                break;
+        }
     }
 }
 
-void WorldSession::HandleSetChannelWatch(WorldPacket &recvPacket)
+void WorldSession::HandleChannelPlayerCommand(WorldPackets::Channel::ChannelPlayerCommand& packet)
 {
-    std::string channelName;
-    recvPacket >> channelName;
+    if (packet.Name.length() >= MAX_CHANNEL_NAME_STR)
+    {
+        TC_LOG_DEBUG("chat.system", "{} {} ChannelName: {}, Name: {}, Name too long.",
+            GetOpcodeNameForLogging(packet.GetOpcode()), GetPlayerInfo(), packet.ChannelName, packet.Name);
+        return;
+    }
 
-    TC_LOG_DEBUG("chat.system", "CMSG_SET_CHANNEL_WATCH {} Channel: {}",
-        GetPlayerInfo(), channelName);
+    TC_LOG_DEBUG("chat.system", "{} {} ChannelName: {}, Name: {}",
+        GetOpcodeNameForLogging(packet.GetOpcode()), GetPlayerInfo(), packet.ChannelName, packet.Name);
 
-    /*
-    if (Channel* channel = ChannelMgr::GetChannelForPlayerByNamePart(channelName, GetPlayer()))
-        channel->JoinNotify(GetPlayer());
-    */
+    if (!normalizePlayerName(packet.Name))
+        return;
+
+    if (Channel* channel = ChannelMgr::GetChannelForPlayerByNamePart(packet.ChannelName, GetPlayer()))
+    {
+        switch (packet.GetOpcode())
+        {
+            case CMSG_CHANNEL_BAN:
+                channel->Ban(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_INVITE:
+                channel->Invite(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_KICK:
+                channel->Kick(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_MODERATOR:
+                channel->SetModerator(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_MUTE:
+                channel->SetMute(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_SET_OWNER:
+                channel->SetOwner(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_SILENCE_ALL:
+                channel->SilenceAll(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_SILENCE_VOICE:
+                channel->SilenceVoice(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_UNBAN:
+                channel->UnBan(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_UNMODERATOR:
+                channel->UnsetModerator(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_UNMUTE:
+                channel->UnsetMute(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_UNSILENCE_ALL:
+                channel->UnsilenceAll(GetPlayer(), packet.Name);
+                break;
+            case CMSG_CHANNEL_UNSILENCE_VOICE:
+                channel->UnsilenceVoice(GetPlayer(), packet.Name);
+                break;
+            default:
+                break;
+        }
+    }
+}
+
+void WorldSession::HandleChannelPassword(WorldPackets::Channel::ChannelPassword& packet)
+{
+    if (packet.Password.length() > MAX_CHANNEL_PASS_STR)
+    {
+        TC_LOG_DEBUG("chat.system", "{} {} ChannelName: {}, Password: {}, Password too long.",
+            GetOpcodeNameForLogging(packet.GetOpcode()), GetPlayerInfo(), packet.ChannelName, packet.Password);
+        return;
+    }
+
+    TC_LOG_DEBUG("chat.system", "{} {} ChannelName: {}, Password: {}",
+        GetOpcodeNameForLogging(packet.GetOpcode()), GetPlayerInfo(), packet.ChannelName, packet.Password);
+
+    if (Channel* channel = ChannelMgr::GetChannelForPlayerByNamePart(packet.ChannelName, GetPlayer()))
+        channel->Password(GetPlayer(), packet.Password);
 }

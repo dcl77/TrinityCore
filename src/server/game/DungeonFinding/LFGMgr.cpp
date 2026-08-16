@@ -242,11 +242,19 @@ void LFGMgr::LoadLFGDungeons()
             continue;
         }
 
+<<<<<<< HEAD
         LFGDungeonData& data = dungeonItr->second;
         data.x               = fields[1].GetFloat();
         data.y               = fields[2].GetFloat();
         data.z               = fields[3].GetFloat();
         data.o               = fields[4].GetFloat();
+=======
+        LFGDungeonData& data    = dungeonItr->second;
+        data.x                  = fields[1].GetFloat();
+        data.y                  = fields[2].GetFloat();
+        data.z                  = fields[3].GetFloat();
+        data.o                  = fields[4].GetFloat();
+>>>>>>> upstream/3.3.5
 
         ++count;
     }
@@ -1005,7 +1013,7 @@ void LFGMgr::MakeNewGroup(LfgProposal const& proposal)
     }
 
     ASSERT(grp);
-    grp->SetDungeonDifficulty(Difficulty(dungeon->difficulty));
+    grp->SetDungeonDifficultyID(Difficulty(dungeon->difficulty));
     ObjectGuid gguid = grp->GetGUID();
     SetDungeon(gguid, dungeon->Entry());
     SetState(gguid, LFG_STATE_DUNGEON);
@@ -1687,7 +1695,7 @@ LfgLockMap const LFGMgr::GetLockedDungeons(ObjectGuid guid)
     }
 
     uint8 level = player->GetLevel();
-    uint8 expansion = player->GetSession()->Expansion();
+    uint8 expansion = player->GetSession()->GetExpansion();
     LfgDungeonSet const& dungeons = GetDungeonsByRandom(0);
     bool denyJoin = !player->GetSession()->HasPermission(rbac::RBAC_PERM_JOIN_DUNGEON_FINDER);
 
@@ -2001,12 +2009,23 @@ uint8 LFGMgr::GetQueueId(ObjectGuid guid)
         GuidSet const& players = GetPlayers(guid);
         ObjectGuid pguid = players.empty() ? ObjectGuid::Empty : (*players.begin());
         if (!pguid.IsEmpty())
+<<<<<<< HEAD
              return GetTeam(pguid);
     }
     return GetTeam(guid);
 }
 LFGQueue& LFGMgr::GetQueue(ObjectGuid guid)
  {
+=======
+            return GetTeam(pguid);
+    }
+
+    return GetTeam(guid);
+}
+
+LFGQueue& LFGMgr::GetQueue(ObjectGuid guid)
+{
+>>>>>>> upstream/3.3.5
     uint8 queueId = GetQueueId(guid);
     return QueuesStore[queueId];
 }
@@ -2031,6 +2050,7 @@ bool LFGMgr::AllQueued(GuidList const& check)
 }
 
 time_t LFGMgr::GetQueueJoinTime(ObjectGuid guid)
+<<<<<<< HEAD
  {
     uint8 queueId = GetQueueId(guid);
     LfgQueueContainer::const_iterator itr = QueuesStore.find(queueId);
@@ -2039,6 +2059,16 @@ time_t LFGMgr::GetQueueJoinTime(ObjectGuid guid)
 
         return 0;
     }
+=======
+{
+    uint8 queueId = GetQueueId(guid);
+    LfgQueueContainer::const_iterator itr = QueuesStore.find(queueId);
+    if (itr != QueuesStore.end())
+        return itr->second.GetJoinTime(guid);
+
+    return 0;
+}
+>>>>>>> upstream/3.3.5
 
 // Only for debugging purposes
 void LFGMgr::Clean()

@@ -487,7 +487,11 @@ class spell_halazzi_set_health : public SpellScript
 
     void HandleScript(SpellEffIndex /*effIndex*/)
     {
+<<<<<<< HEAD
         GetCaster()->SetHealth(GetCaster()->CountPctFromMaxHealth(uint32(GetEffectValue())));
+=======
+        GetCaster()->SetHealth(GetCaster()->CountPctFromMaxHealth(GetEffectValue()));
+>>>>>>> upstream/3.3.5
     }
 
     void Register() override

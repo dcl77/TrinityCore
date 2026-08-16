@@ -2864,6 +2864,7 @@ namespace Trinity
                     va_end(ap);
                 }
                 else
+<<<<<<< HEAD
                     std::strcpy(strBuffer, text);
 
                 do_helper(dataList, strBuffer);
@@ -2874,6 +2875,21 @@ namespace Trinity
             {
                 while (char* line = ChatHandler::LineFromMessage(text))
                 {
+=======
+                {
+                    std::strncpy(strBuffer, text, BufferSize);
+                    strBuffer[BufferSize - 1] = '\0';
+                }
+
+                do_helper(dataList, strBuffer);
+            }
+
+        private:
+            void do_helper(WorldPacketList& dataList, char* text)
+            {
+                while (char* line = ChatHandler::LineFromMessage(text))
+                {
+>>>>>>> upstream/3.3.5
                     WorldPackets::Chat::Chat packet;
                     packet.Initialize(CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, nullptr, line);
                     packet.Write();

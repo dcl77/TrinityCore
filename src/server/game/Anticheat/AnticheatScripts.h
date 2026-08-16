@@ -15,6 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+<<<<<<<< HEAD:src/server/game/Anticheat/AnticheatScripts.h
 #ifndef SC_ACSCRIPTS_H
 #define SC_ACSCRIPTS_H
 
@@ -31,3 +32,17 @@ class AnticheatScripts: public PlayerScript
 };
 
 #endif
+========
+#ifndef TRINITYCORE_ASYNC_CALLBACK_PROCESSOR_FWD_H
+#define TRINITYCORE_ASYNC_CALLBACK_PROCESSOR_FWD_H
+
+#include <concepts>
+
+template <typename T>
+concept AsyncCallback = requires(T& t) { { InvokeAsyncCallbackIfReady(t) } -> std::convertible_to<bool>; };
+
+template<AsyncCallback T>
+class AsyncCallbackProcessor;
+
+#endif // TRINITYCORE_ASYNC_CALLBACK_PROCESSOR_FWD_H
+>>>>>>>> upstream/3.3.5:src/common/Utilities/AsyncCallbackProcessorFwd.h

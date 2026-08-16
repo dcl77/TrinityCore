@@ -18,6 +18,7 @@
 #include "WorldSession.h"
 #include "AccountMgr.h"
 #include "AuctionHouseMgr.h"
+#include "AuctionHousePackets.h"
 #include "CharacterCache.h"
 #include "Creature.h"
 #include "CustomConfig.h"
@@ -38,8 +39,9 @@
 #include "WorldPacket.h"
 
 //void called when player click on auctioneer npc
-void WorldSession::HandleAuctionHelloOpcode(WorldPacket& recvData)
+void WorldSession::HandleAuctionHelloOpcode(WorldPackets::AuctionHouse::AuctionHelloRequest& hello)
 {
+<<<<<<< HEAD
     if (sGameConfig->GetBoolConfig("config.hardcore.auction"))
     {
         Player* player = GetPlayer();
@@ -54,9 +56,12 @@ void WorldSession::HandleAuctionHelloOpcode(WorldPacket& recvData)
     recvData >> guid;
 
     Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_AUCTIONEER);
+=======
+    Creature* unit = GetPlayer()->GetNPCIfCanInteractWith(hello.Guid, UNIT_NPC_FLAG_AUCTIONEER);
+>>>>>>> upstream/3.3.5
     if (!unit)
     {
-        TC_LOG_DEBUG("network", "WORLD: HandleAuctionHelloOpcode - Unit ({}) not found or you can't interact with him.", guid.ToString());
+        TC_LOG_DEBUG("network", "WORLD: HandleAuctionHelloOpcode - Unit ({}) not found or you can't interact with him.", hello.Guid.ToString());
         return;
     }
 
@@ -64,7 +69,7 @@ void WorldSession::HandleAuctionHelloOpcode(WorldPacket& recvData)
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    SendAuctionHello(guid, unit);
+    SendAuctionHello(hello.Guid, unit);
 }
 
 //this void causes that auction window is opened
@@ -90,6 +95,7 @@ void WorldSession::SendAuctionHello(ObjectGuid guid, Unit const* unit)
     if (!ahEntry)
         return;
 
+<<<<<<< HEAD
     WorldPacket data(MSG_AUCTION_HELLO, 12);
     data << guid;
     data << uint32(ahEntry->ID);
@@ -107,6 +113,34 @@ void WorldSession::SendAuctionCommandResult(uint32 auctionItemId, AuctionAction 
     if (errorCode == ERR_AUCTION_INVENTORY)
         data << int32(bagResult);
     SendPacket(&data);
+=======
+    WorldPackets::AuctionHouse::AuctionHelloResponse auctionHelloResponse;
+    auctionHelloResponse.Auctioneer = guid;
+    auctionHelloResponse.AuctionHouseID = ahEntry->ID;
+    auctionHelloResponse.OpenForBusiness = true;                         // 3.3.3: 1 - AH enabled, 0 - AH disabled
+    SendPacket(auctionHelloResponse.Write());
+}
+
+//call this method when player bids, creates, or deletes auction
+void WorldSession::SendAuctionCommandResult(AuctionEntry const* auction, AuctionCommand command, AuctionResult errorCode, InventoryResult bagResult /*= 0*/)
+{
+    WorldPackets::AuctionHouse::AuctionCommandResult auctionCommandResult;
+    auctionCommandResult.Command = AsUnderlyingType(command);
+    auctionCommandResult.ErrorCode = AsUnderlyingType(errorCode);
+    auctionCommandResult.BagResult = AsUnderlyingType(bagResult);
+
+    if (auction)
+    {
+        auctionCommandResult.AuctionID = auction->Id;
+        if (auction->bidder)
+            auctionCommandResult.Guid = ObjectGuid::Create<HighGuid::Player>(auction->bidder);
+
+        auctionCommandResult.MinIncrement = auction->GetAuctionOutBid();
+        auctionCommandResult.Money = auction->bid;
+    }
+
+    SendPacket(auctionCommandResult.Write());
+>>>>>>> upstream/3.3.5
 }
 
 //this function sends notification, if bidder is online
@@ -346,7 +380,11 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recvData)
 
         TC_LOG_INFO("network", "CMSG_AUCTION_SELL_ITEM: {} {} is selling item {} {} to auctioneer {} with count {} with initial bid {} with buyout {} and with time {} (in sec) in auctionhouse {}",
             _player->GetGUID().ToString(), _player->GetName(), item->GetGUID().ToString(), item->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()),
+<<<<<<< HEAD
             creature->GetGUID().ToString(), item->GetCount(), bid, buyout, auctionTime, AH->houseId);
+=======
+            creature->GetGUID().ToString(), item->GetCount(), bid, buyout, auctionTime, AH->GetHouseId());
+>>>>>>> upstream/3.3.5
 
         // Add to pending auctions, or fail with insufficient funds error
         if (!sAuctionMgr->PendingAuctionAdd(_player, AH))
@@ -404,8 +442,13 @@ void WorldSession::HandleAuctionSellItem(WorldPacket& recvData)
         AH->Flags = AUCTION_ENTRY_FLAG_NONE;
 
         TC_LOG_INFO("network", "CMSG_AUCTION_SELL_ITEM: {} {} is selling item {} {} to auctioneer {} with count {} with initial bid {} with buyout {} and with time {} (in sec) in auctionhouse {}",
+<<<<<<< HEAD
             _player->GetGUID().ToString(), _player->GetName(), newItem->GetGUID().ToString(), item->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()),
             creature->GetGUID().ToString(), newItem->GetCount(), bid, buyout, auctionTime, AH->houseId);
+=======
+            _player->GetGUID().ToString(), _player->GetName(), newItem->GetGUID().ToString(), newItem->GetNameForLocaleIdx(sWorld->GetDefaultDbcLocale()),
+            creature->GetGUID().ToString(), newItem->GetCount(), bid, buyout, auctionTime, AH->GetHouseId());
+>>>>>>> upstream/3.3.5
 
         // Add to pending auctions, or fail with insufficient funds error
         if (!sAuctionMgr->PendingAuctionAdd(_player, AH))

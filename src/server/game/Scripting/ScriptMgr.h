@@ -1025,7 +1025,16 @@ public: /* Unloading */
 
 public: /* {VAS} Script Hooks */
 
+<<<<<<< HEAD
     float VAS_Script_Hooks();
+=======
+        void OnNetworkStart();
+        void OnNetworkStop();
+        void OnSocketOpen(std::shared_ptr<WorldSocket> const& socket);
+        void OnSocketClose(std::shared_ptr<WorldSocket> const& socket);
+        void OnPacketReceive(WorldSession* session, WorldPacket const& packet);
+        void OnPacketSend(WorldSession* session, WorldPacket const& packet);
+>>>>>>> upstream/3.3.5
 
 public: /* SpellScriptLoader */
 

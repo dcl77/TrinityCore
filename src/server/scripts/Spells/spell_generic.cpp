@@ -1596,7 +1596,7 @@ class spell_ethereal_pet_aura : public AuraScript
     {
         PreventDefaultAction();
 
-        std::list<Creature*> minionList;
+        std::list<TempSummon*> minionList;
         GetUnitOwner()->GetAllMinionsByEntry(minionList, NPC_ETHEREAL_SOUL_TRADER);
         for (Creature* minion : minionList)
         {
@@ -2170,7 +2170,11 @@ class spell_gen_knock_away_threat_reduction : public SpellScript
     PrepareSpellScript(spell_gen_knock_away_threat_reduction);
 
 public:
+<<<<<<< HEAD
     explicit spell_gen_knock_away_threat_reduction(int32 threatPercent) : _threatPercent(threatPercent) {}
+=======
+    explicit spell_gen_knock_away_threat_reduction(int32 threatPercent) : _threatPercent(threatPercent) { }
+>>>>>>> upstream/3.3.5
 
 private:
     int32 _threatPercent;
@@ -2529,6 +2533,8 @@ class spell_gen_mounted_charge : public SpellScript
                 }
                 break;
             }
+            default:
+                break;
         }
     }
 

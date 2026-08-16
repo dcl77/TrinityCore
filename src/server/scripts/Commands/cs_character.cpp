@@ -140,7 +140,11 @@ public:
 
                 DeletedInfo info;
 
+<<<<<<< HEAD
                 info.guid = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt32());
+=======
+                info.guid       = ObjectGuid::Create<HighGuid::Player>(fields[0].GetUInt32());
+>>>>>>> upstream/3.3.5
                 info.name       = fields[1].GetString();
                 info.accountId  = fields[2].GetUInt32();
 

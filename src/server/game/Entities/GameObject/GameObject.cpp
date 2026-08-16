@@ -468,10 +468,13 @@ bool GameObject::Create(ObjectGuid::LowType guidlow, uint32 name_id, Map* map, u
 
 void GameObject::Update(uint32 diff)
 {
+<<<<<<< HEAD
 #ifdef ELUNA
     if (Eluna* e = GetEluna())
         e->UpdateAI(this, diff);
 #endif
+=======
+>>>>>>> upstream/3.3.5
     WorldObject::Update(diff);
 
     if (AI())
@@ -2591,11 +2594,19 @@ void GameObject::SetLootState(LootState state, Unit* unit)
     if (GetGoType() == GAMEOBJECT_TYPE_CHEST && state == GO_ACTIVATED)
     {
         GameObjectTemplate const* goInfo = GetGOInfo();
+<<<<<<< HEAD
 
         if (goInfo->chest.chestRestockTime > 0 && m_restockTime == 0)
             m_restockTime = GameTime::GetGameTime() + goInfo->chest.chestRestockTime;
 
         if (goInfo->chest.chestRestockTime == 0 && m_restockTime == 0 && GetMap() && GetMap()->IsWorldMap())
+=======
+        if (goInfo->chest.chestRestockTime > 0 && m_restockTime == 0)
+            m_restockTime = GameTime::GetGameTime() + goInfo->chest.chestRestockTime;
+
+        // If world chests were opened, despawn them after 5 minutes
+        if (goInfo->chest.chestRestockTime == 0 && GetMap()->IsWorldMap())
+>>>>>>> upstream/3.3.5
             DespawnOrUnsummon(5min);
     }
 
@@ -2709,8 +2720,12 @@ void GameObject::SetLootRecipient(Creature* creature)
     if (!creature)
     {
         m_lootRecipient.Clear();
+<<<<<<< HEAD
         m_lootRecipientGroup = ObjectGuid::Empty;
         ResetAllowedLooters();
+=======
+        m_lootRecipientGroup = group ? group->GetGUID() : ObjectGuid::Empty;
+>>>>>>> upstream/3.3.5
         return;
     }
 
@@ -2733,6 +2748,7 @@ void GameObject::SetLootRecipient(Map* map)
             if (!m_lootRecipient)
                 m_lootRecipient = groupMember->GetGUID();
 
+<<<<<<< HEAD
             Group* memberGroup = groupMember->GetGroup();
             if (memberGroup && !group)
             {
@@ -2747,6 +2763,13 @@ void GameObject::SetLootRecipient(Map* map)
 
     if (!group)
         AddAllowedLooter(m_lootRecipient);
+=======
+    // either get the group from the passed parameter or from unit's one
+    if (group)
+        m_lootRecipientGroup = group->GetGUID();
+    else if (Group* unitGroup = player->GetGroup())
+        m_lootRecipientGroup = unitGroup->GetGUID();
+>>>>>>> upstream/3.3.5
 }
 
 bool GameObject::IsLootAllowedFor(Player const* player) const

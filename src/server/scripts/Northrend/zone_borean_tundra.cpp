@@ -1869,6 +1869,7 @@ class spell_borean_tundra_abduction_quest_completion : public SpellScript
     }
 };
 
+<<<<<<< HEAD
 enum SpellBloodHaze
 {
     SPELL_BLOODSPORE_HAZE = 50380,
@@ -1903,6 +1904,8 @@ class spell_bloodspore_haze : public SpellScript
     }
 };
 
+=======
+>>>>>>> upstream/3.3.5
 void AddSC_borean_tundra()
 {
     RegisterGameObjectAI(go_caribou_trap);
@@ -1941,5 +1944,8 @@ void AddSC_borean_tundra()
     RegisterSpellScript(spell_borean_tundra_strip_auras);
     RegisterSpellScript(spell_borean_tundra_arcane_chains_character_force_cast);
     RegisterSpellScript(spell_borean_tundra_abduction_quest_completion);
+<<<<<<< HEAD
     RegisterSpellScript(spell_bloodspore_haze);
+=======
+>>>>>>> upstream/3.3.5
 }

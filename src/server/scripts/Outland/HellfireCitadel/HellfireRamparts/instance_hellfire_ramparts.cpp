@@ -89,7 +89,11 @@ class instance_ramparts : public InstanceMapScript
                     if (state == DONE)
                     {
                         if (GameObject* chest = GetGameObject(DATA_FEL_IRON_CHEST))
+<<<<<<< HEAD
                             chest->ActivateObject(GameObjectActions(GameObjectActions::MakeActive));
+=======
+                            chest->ActivateObject(GameObjectActions::MakeActive);
+>>>>>>> upstream/3.3.5
                     }
                     else if (state == FAIL)
                         Events.ScheduleEvent(EVENT_RESET_VAZRUDEN, 30s);

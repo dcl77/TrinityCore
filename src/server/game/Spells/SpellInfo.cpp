@@ -349,10 +349,16 @@ std::array<SpellImplicitTargetInfo::StaticData, TOTAL_SPELL_TARGETS> SpellImplic
 } };
 
 SpellEffectInfo::SpellEffectInfo() : _spellInfo(nullptr), EffectIndex(EFFECT_0), Effect(SPELL_EFFECT_NONE), ApplyAuraName(SPELL_AURA_NONE),
+<<<<<<< HEAD
 ApplyAuraPeriod(0), DieSides(0), RealPointsPerLevel(0), BasePoints(0), PointsPerComboPoint(0), Amplitude(0), ChainAmplitude(0),
 BonusCoefficient(0), MiscValue(0), MiscValueB(0), Mechanic(MECHANIC_NONE), RadiusEntry(nullptr), ChainTargets(0), ItemType(0),
 
 TriggerSpell(0), ImplicitTargetConditions(nullptr), _immunityInfo(nullptr)
+=======
+    ApplyAuraPeriod(0), DieSides(0), RealPointsPerLevel(0), BasePoints(0), PointsPerComboPoint(0), Amplitude(0), ChainAmplitude(0),
+    BonusCoefficient(0), MiscValue(0), MiscValueB(0), Mechanic(MECHANIC_NONE), RadiusEntry(nullptr), ChainTargets(0), ItemType(0),
+    TriggerSpell(0), ImplicitTargetConditions(nullptr), _immunityInfo(nullptr)
+>>>>>>> upstream/3.3.5
 {
 }
 
@@ -1267,7 +1273,7 @@ bool SpellInfo::IsRangedWeaponSpell() const
 {
     return (SpellFamilyName == SPELLFAMILY_HUNTER && !(SpellFamilyFlags[1] & 0x10000000)) // for 53352, cannot find better way
         || (EquippedItemSubClassMask & ITEM_SUBCLASS_MASK_WEAPON_RANGED)
-        || (Attributes & SPELL_ATTR0_REQ_AMMO);
+        || (HasAttribute(SPELL_ATTR0_REQ_AMMO));
 }
 
 bool SpellInfo::IsAutoRepeatRangedSpell() const
@@ -3203,6 +3209,7 @@ uint32 SpellInfo::GetMaxTicks() const
         {
             switch (effect.ApplyAuraName)
             {
+<<<<<<< HEAD
             case SPELL_AURA_PERIODIC_DAMAGE:
             case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
             case SPELL_AURA_PERIODIC_HEAL:
@@ -3228,6 +3235,33 @@ uint32 SpellInfo::GetMaxTicks() const
                 break;
             default:
                 break;
+=======
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                case SPELL_AURA_PERIODIC_HEAL:
+                case SPELL_AURA_OBS_MOD_HEALTH:
+                case SPELL_AURA_OBS_MOD_POWER:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_FROM_CLIENT:
+                case SPELL_AURA_POWER_BURN:
+                case SPELL_AURA_PERIODIC_LEECH:
+                case SPELL_AURA_PERIODIC_MANA_LEECH:
+                case SPELL_AURA_PERIODIC_ENERGIZE:
+                case SPELL_AURA_PERIODIC_DUMMY:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
+                case SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR:
+                    // skip infinite periodics
+                    if (effect.ApplyAuraPeriod > 0 && DotDuration > 0)
+                    {
+                        totalTicks = static_cast<uint32>(DotDuration) / effect.ApplyAuraPeriod;
+                        if (HasAttribute(SPELL_ATTR5_START_PERIODIC_AT_APPLY))
+                            ++totalTicks;
+                    }
+                    break;
+                default:
+                    break;
+>>>>>>> upstream/3.3.5
             }
         }
     }
@@ -3617,6 +3651,7 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, SpellEffectInfo const& ef
         {
             switch (otherEffect.ApplyAuraName)
             {
+<<<<<<< HEAD
             case SPELL_AURA_MOD_STEALTH:
             case SPELL_AURA_MOD_UNATTACKABLE:
                 return true;
@@ -3627,6 +3662,18 @@ bool _isPositiveEffectImpl(SpellInfo const* spellInfo, SpellEffectInfo const& ef
                 return false;
             default:
                 break;
+=======
+                case SPELL_AURA_MOD_STEALTH:
+                case SPELL_AURA_MOD_UNATTACKABLE:
+                    return true;
+                case SPELL_AURA_SCHOOL_HEAL_ABSORB:
+                case SPELL_AURA_EMPATHY:
+                case SPELL_AURA_MOD_SPELL_DAMAGE_FROM_CASTER:
+                case SPELL_AURA_PREVENTS_FLEEING:
+                    return false;
+                default:
+                    break;
+>>>>>>> upstream/3.3.5
             }
         }
     }

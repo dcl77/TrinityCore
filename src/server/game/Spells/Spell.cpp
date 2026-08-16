@@ -265,6 +265,7 @@ void SpellCastTargets::Write(WorldPackets::Spells::SpellTargetData& data)
         std::array<char, 128>& name = data.Name.emplace();
         std::ranges::copy_n(m_strTarget.begin(), std::min(std::ssize(m_strTarget), std::ssize(name)), name.begin());
     }
+<<<<<<< HEAD
 }
 
 ObjectGuid SpellCastTargets::GetOrigUnitTargetGUID() const
@@ -287,6 +288,8 @@ void SpellCastTargets::SetOrigUnitTarget(Unit* target)
         return;
 
     m_origObjectTargetGUID = target->GetGUID();
+=======
+>>>>>>> upstream/3.3.5
 }
 
 ObjectGuid SpellCastTargets::GetUnitTargetGUID() const
@@ -2295,24 +2298,8 @@ void Spell::AddUnitTarget(Unit* target, uint32 effectMask, bool checkIfValid /*=
 void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
 {
     for (SpellEffectInfo const& spellEffectInfo : m_spellInfo->GetEffects())
-    {
-        if (!spellEffectInfo.IsEffect())
+        if (!spellEffectInfo.IsEffect() || !CheckEffectTarget(go, spellEffectInfo))
             effectMask &= ~(1 << spellEffectInfo.EffectIndex);
-        else
-        {
-            switch (spellEffectInfo.Effect)
-            {
-                case SPELL_EFFECT_GAMEOBJECT_DAMAGE:
-                case SPELL_EFFECT_GAMEOBJECT_REPAIR:
-                case SPELL_EFFECT_GAMEOBJECT_SET_DESTRUCTION_STATE:
-                    if (go->GetGoType() != GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
-                        effectMask &= ~(1 << spellEffectInfo.EffectIndex);
-                    break;
-                default:
-                    break;
-            }
-        }
-    }
 
     if (!effectMask)
         return;
@@ -2357,7 +2344,7 @@ void Spell::AddGOTarget(GameObject* go, uint32 effectMask)
 void Spell::AddItemTarget(Item* item, uint32 effectMask)
 {
     for (SpellEffectInfo const& spellEffectInfo : m_spellInfo->GetEffects())
-        if (!spellEffectInfo.IsEffect())
+        if (!spellEffectInfo.IsEffect() || !CheckEffectTarget(item, spellEffectInfo))
             effectMask &= ~(1 << spellEffectInfo.EffectIndex);
 
     // no effects left
@@ -2436,25 +2423,43 @@ void Spell::AddDestTarget(SpellDestination const& dest, uint32 effIndex)
 int64 Spell::GetUnitTargetCountForEffect(SpellEffIndex effect) const
 {
     return std::count_if(m_UniqueTargetInfo.begin(), m_UniqueTargetInfo.end(), [effect](TargetInfo const& targetInfo)
+<<<<<<< HEAD
         {
             return targetInfo.EffectMask & (1 << effect);
         });
+=======
+    {
+        return targetInfo.EffectMask & (1 << effect);
+    });
+>>>>>>> upstream/3.3.5
 }
 
 int64 Spell::GetGameObjectTargetCountForEffect(SpellEffIndex effect) const
 {
     return std::count_if(m_UniqueGOTargetInfo.begin(), m_UniqueGOTargetInfo.end(), [effect](GOTargetInfo const& targetInfo)
+<<<<<<< HEAD
         {
             return targetInfo.EffectMask & (1 << effect);
         });
+=======
+    {
+        return targetInfo.EffectMask & (1 << effect);
+    });
+>>>>>>> upstream/3.3.5
 }
 
 int64 Spell::GetItemTargetCountForEffect(SpellEffIndex effect) const
 {
     return std::count_if(m_UniqueItemInfo.begin(), m_UniqueItemInfo.end(), [effect](ItemTargetInfo const& targetInfo)
+<<<<<<< HEAD
         {
             return targetInfo.EffectMask & (1 << effect);
         });
+=======
+    {
+        return targetInfo.EffectMask & (1 << effect);
+    });
+>>>>>>> upstream/3.3.5
 }
 
 void Spell::TargetInfo::PreprocessTarget(Spell* spell)
@@ -4679,19 +4684,18 @@ void Spell::ExecuteLogEffectResurrect(uint8 effIndex, Unit* target)
 
 void Spell::SendInterrupted(SpellCastResult result, Optional<SpellCastResult> resultOther /*= {}*/)
 {
-    WorldPacket data(SMSG_SPELL_FAILURE, 8 + 1 + 4 + 1);
-    data << m_caster->GetPackGUID();
-    data << uint8(m_cast_count);
-    data << uint32(m_spellInfo->Id);
-    data << uint8(result);
-    m_caster->SendMessageToSet(&data, true);
+    WorldPackets::Spells::SpellFailure failurePacket;
+    failurePacket.CasterUnit = m_caster->GetGUID();
+    failurePacket.CastID = m_cast_count;
+    failurePacket.SpellID = m_spellInfo->Id;
+    failurePacket.Reason = result;
+    m_caster->SendMessageToSet(failurePacket.Write(), true);
 
-    data.Initialize(SMSG_SPELL_FAILED_OTHER, 8 + 1 + 4 + 1);
-    data << m_caster->GetPackGUID();
-    data << uint8(m_cast_count);
-    data << uint32(m_spellInfo->Id);
-    data << uint8(resultOther.value_or(result));
-    m_caster->SendMessageToSet(&data, true);
+    WorldPackets::Spells::SpellFailedOther failedPacket;
+    failedPacket.CasterUnit = m_caster->GetGUID();
+    failedPacket.SpellID = m_spellInfo->Id;
+    failedPacket.Reason = resultOther.value_or(result);
+    m_caster->SendMessageToSet(failedPacket.Write(), true);
 }
 
 void Spell::SendChannelUpdate(uint32 time)
@@ -5225,10 +5229,10 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
 
         if (m_caster->ToUnit() && !m_caster->ToUnit()->GetSpellHistory()->IsReady(m_spellInfo, m_castItemEntry, IsIgnoringCooldowns()))
         {
-            if (m_triggeredByAuraSpell || m_spellInfo->IsCooldownStartedOnEvent())
+            if (m_triggeredByAuraSpell || (m_spellInfo->IsCooldownStartedOnEvent() && !m_caster->ToUnit()->GetSpellHistory()->HasCooldownOnHold(m_spellInfo->Id)))
                 return SPELL_FAILED_DONT_REPORT;
-            else
-                return SPELL_FAILED_NOT_READY;
+
+            return SPELL_FAILED_NOT_READY;
         }
     }
 
@@ -5858,7 +5862,11 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 if (!unitCaster)
                     return SPELL_FAILED_BAD_TARGETS;
 
+<<<<<<< HEAD
                 if (!unitCaster->GetPetGUID().IsEmpty())                 //let warlock do a replacement summon
+=======
+                if (!unitCaster->GetPetGUID().IsEmpty())                  //let warlock do a replacement summon
+>>>>>>> upstream/3.3.5
                 {
                     if (unitCaster->GetTypeId() == TYPEID_PLAYER)
                     {
@@ -5929,7 +5937,7 @@ SpellCastResult Spell::CheckCast(bool strict, uint32* param1 /*= nullptr*/, uint
                 if (map->IsDungeon())
                 {
                     uint32 mapId = m_caster->GetMap()->GetId();
-                    Difficulty difficulty = m_caster->GetMap()->GetDifficulty();
+                    Difficulty difficulty = m_caster->GetMap()->GetDifficultyID();
                     if (map->IsRaid())
                         if (InstancePlayerBind* targetBind = target->GetBoundInstance(mapId, difficulty))
                             if (InstancePlayerBind* casterBind = m_caster->ToPlayer()->GetBoundInstance(mapId, difficulty))
@@ -6464,7 +6472,7 @@ SpellCastResult Spell::CheckArenaCastRules() const
         return SPELL_CAST_OK;
 
     // check NOT_USABLE attributes
-    if (m_spellInfo->AttributesEx4 & SPELL_ATTR4_NOT_USABLE_IN_ARENA)
+    if (m_spellInfo->HasAttribute(SPELL_ATTR4_NOT_USABLE_IN_ARENA))
         return SPELL_FAILED_NOT_IN_ARENA;
 
     // check cooldowns
@@ -7529,6 +7537,28 @@ bool Spell::CheckEffectTarget(Unit const* target, SpellEffectInfo const& spellEf
     return true;
 }
 
+bool Spell::CheckEffectTarget(GameObject const* target, SpellEffectInfo const& spellEffectInfo) const
+{
+    switch (spellEffectInfo.Effect)
+    {
+        case SPELL_EFFECT_GAMEOBJECT_DAMAGE:
+        case SPELL_EFFECT_GAMEOBJECT_REPAIR:
+        case SPELL_EFFECT_GAMEOBJECT_SET_DESTRUCTION_STATE:
+            if (target->GetGoType() != GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
+                return false;
+            break;
+        default:
+            break;
+    }
+
+    return true;
+}
+
+bool Spell::CheckEffectTarget(Item const* /*target*/, SpellEffectInfo const& /*spellEffectInfo*/) const
+{
+    return true;
+}
+
 bool Spell::IsTriggered() const
 {
     return (_triggeredCastFlags & TRIGGERED_FULL_MASK) != 0;
@@ -7928,6 +7958,8 @@ void Spell::SetSpellValue(SpellValueMod mod, int32 value)
             break;
         case SPELLVALUE_CRIT_CHANCE:
             m_spellValue->CriticalChance = value;
+            break;
+        default:
             break;
     }
 }

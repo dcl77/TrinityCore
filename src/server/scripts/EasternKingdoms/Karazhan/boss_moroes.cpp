@@ -106,7 +106,7 @@ Position const Locations[4] =
     {-10975.9f, -1885.81f, 81.73f, 2.253890f},
 };
 
-const uint32 Adds[6]=
+constexpr std::array<uint32, 6> Adds =
 {
     17007,
     19872,
@@ -119,9 +119,14 @@ const uint32 Adds[6]=
 // 15687 - Moroes
 struct boss_moroes : public BossAI
 {
+<<<<<<< HEAD
     boss_moroes(Creature* creature) : BossAI(creature, DATA_MOROES), _frenzied(false)
     {
         memset(AddId, 0, sizeof(AddId));
+=======
+    boss_moroes(Creature* creature) : BossAI(creature, DATA_MOROES), _frenzied(false), AddId()
+    {
+>>>>>>> upstream/3.3.5
     }
 
     void Reset() override
@@ -186,6 +191,7 @@ struct boss_moroes : public BossAI
 
     void SpawnGuests()
     {
+<<<<<<< HEAD
         DespawnGuests();
 
         if (IsGuestListEmpty())
@@ -217,19 +223,41 @@ struct boss_moroes : public BossAI
                     AddGUID[i] = creature->GetGUID();
             }
         }
+=======
+        if (IsGuestListEmpty())
+        {
+            std::array<uint32, 6> AddList = Adds;
+
+            Trinity::Containers::RandomShuffle(AddList);
+
+            for (std::size_t i = 0; i < AddId.size(); ++i)
+                AddId[i] = AddList[i];
+        }
+        else
+            DespawnGuests();
+
+        for (std::size_t i = 0; i < AddId.size(); ++i)
+            if (Creature* creature = me->SummonCreature(AddId[i], Locations[i], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10s))
+                AddGUID[i] = creature->GetGUID();
+>>>>>>> upstream/3.3.5
     }
 
     bool IsGuestListEmpty()
     {
+<<<<<<< HEAD
         for (uint8 i = 0; i < 4; ++i)
             if (AddId[i] == 0)
                 return true;
 
         return false;
+=======
+        return std::ranges::find(AddId, 0u) != AddId.end();
+>>>>>>> upstream/3.3.5
     }
 
     void DespawnGuests()
     {
+<<<<<<< HEAD
         for (uint8 i = 0; i < 4; ++i)
         {
             if (!AddGUID[i].IsEmpty())
@@ -238,15 +266,29 @@ struct boss_moroes : public BossAI
                     temp->DespawnOrUnsummon();
             }
         }
+=======
+        for (ObjectGuid addGuid : AddGUID)
+            if (!addGuid.IsEmpty())
+                if (Creature* temp = ObjectAccessor::GetCreature(*me, addGuid))
+                    temp->DespawnOrUnsummon();
+>>>>>>> upstream/3.3.5
     }
 
     void GuestsAttack()
     {
+<<<<<<< HEAD
         for (uint8 i = 0; i < 4; ++i)
         {
             if (!AddGUID[i].IsEmpty())
             {
                 Creature* temp = ObjectAccessor::GetCreature((*me), AddGUID[i]);
+=======
+        for (ObjectGuid addGuid : AddGUID)
+        {
+            if (!addGuid.IsEmpty())
+            {
+                Creature* temp = ObjectAccessor::GetCreature(*me, addGuid);
+>>>>>>> upstream/3.3.5
                 if (temp && temp->IsAlive())
                 {
                     temp->AI()->AttackStart(me->GetVictim());
@@ -308,8 +350,13 @@ struct boss_moroes : public BossAI
 
 private:
     bool _frenzied;
+<<<<<<< HEAD
     ObjectGuid AddGUID[4];
     uint32 AddId[4];
+=======
+    std::array<ObjectGuid, 4> AddGUID;
+    std::array<uint32, 4> AddId;
+>>>>>>> upstream/3.3.5
 };
 
 struct GuestBaseAI : public ScriptedAI

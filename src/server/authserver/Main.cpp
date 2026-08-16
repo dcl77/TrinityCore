@@ -65,8 +65,13 @@ namespace fs = boost::filesystem;
 #include "ServiceWin32.h"
 #include <tchar.h>
 TCHAR serviceName[] = _T("authserver");
+<<<<<<< HEAD
 TCHAR serviceLongName[] = _T("Ctulhunet.ru auth service");
 TCHAR serviceDescription[] = _T("Ctulhunet.ru World of Warcraft emulator auth service");
+=======
+TCHAR serviceLongName[] = _T("TrinityCore auth service");
+TCHAR serviceDescription[] = _T("TrinityCore World of Warcraft emulator auth service");
+>>>>>>> upstream/3.3.5
 /*
 * -1 - not in service mode
 *  0 - stopped
