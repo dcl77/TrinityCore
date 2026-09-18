@@ -1011,8 +1011,8 @@ public:
     CreatureTemplateContainer const& GetCreatureTemplates() const { return _creatureTemplateStore; }
     CreatureModelInfo const* GetCreatureModelInfo(uint32 modelId) const;
     RandomItemStatsContainer const* GetRandomItemStats() const { return &_randomItemStatsStore; }
-    CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID) const;
-    static uint32 ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data = nullptr);
+    CreatureModelInfo const* GetCreatureModelRandomGender(CreatureModel* model, CreatureTemplate const* creatureTemplate) const;
+    static CreatureModel const* ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data = nullptr);
     static void ChooseCreatureFlags(CreatureTemplate const* cinfo, uint32* npcflag, uint32* unit_flags, uint32* dynamicflags, CreatureData const* data = nullptr);
     EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id) const;
     CreatureAddon const* GetCreatureAddon(ObjectGuid::LowType lowguid) const;
@@ -1203,6 +1203,7 @@ public:
     void LoadCreatureLocales();
     void LoadCreatureTemplates();
     void LoadCreatureTemplates2();
+    void LoadCreatureTemplateModels();
     void LoadCreatureTemplateAddons();
     void LoadCreatureTemplate2(Field* fields);
     void LoadCreatureTemplate(Field* fields);
