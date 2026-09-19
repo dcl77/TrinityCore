@@ -189,7 +189,7 @@ struct npc_headless_horseman_head : public PassiveAI
 {
     npc_headless_horseman_head(Creature* creature) : PassiveAI(creature), _instance(creature->GetInstanceScript()), _phase(PHASE_1)
     {
-        creature->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        creature->SetDisplayFromModel(0);
     }
 
     void JustAppeared() override
@@ -677,7 +677,7 @@ struct npc_flame_bunny : public PassiveAI
 {
     npc_flame_bunny(Creature* creature) : PassiveAI(creature)
     {
-        creature->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        creature->SetDisplayFromModel(1);
     }
 
     void Reset() override

@@ -1011,7 +1011,8 @@ public:
     CreatureTemplateContainer const& GetCreatureTemplates() const { return _creatureTemplateStore; }
     CreatureModelInfo const* GetCreatureModelInfo(uint32 modelId) const;
     RandomItemStatsContainer const* GetRandomItemStats() const { return &_randomItemStatsStore; }
-    CreatureModelInfo const* GetCreatureModelRandomGender(CreatureModel* model, CreatureTemplate const* creatureTemplate) const;
+    CreatureModelInfo const* GetCreatureModelRandomGender(uint32* displayID) const;
+    CreatureModelInfo const* GetCreatureModelRandomGender(CreatureModel* model, CreatureTemplate const* creatureTemplate = nullptr) const;
     static CreatureModel const* ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data = nullptr);
     static void ChooseCreatureFlags(CreatureTemplate const* cinfo, uint32* npcflag, uint32* unit_flags, uint32* dynamicflags, CreatureData const* data = nullptr);
     EquipmentInfo const* GetEquipmentInfo(uint32 entry, int8& id) const;

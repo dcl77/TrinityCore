@@ -249,10 +249,10 @@ struct boss_anubarak_trial : public BossAI
                 _burrowGUID.push_back(summoned->GetGUID());
                 summoned->SetReactState(REACT_PASSIVE);
                 summoned->CastSpell(summoned, SPELL_CHURNING_GROUND, false);
-                summoned->SetDisplayId(summoned->GetCreatureTemplate()->Modelid2);
+                summoned->SetDisplayFromModel(1);
                 break;
             case NPC_SPIKE:
-                summoned->SetDisplayId(summoned->GetCreatureTemplate()->Modelid1);
+                summoned->SetDisplayFromModel(0);
                 if (Unit* target = SelectTarget(SelectTargetMethod::Random, 0, 0.0f, true))
                 {
                     summoned->EngageWithTarget(target);
@@ -590,7 +590,7 @@ struct npc_frost_sphere : public ScriptedAI
     {
         me->SetReactState(REACT_PASSIVE);
         DoCast(SPELL_FROST_SPHERE);
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
         me->GetMotionMaster()->MoveRandom(20.0f);
     }
 

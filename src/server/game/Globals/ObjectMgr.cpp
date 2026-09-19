@@ -408,14 +408,6 @@ void ObjectMgr::LoadCreatureTemplates()
         //  5
         "KillCredit2,"
         //  6
-        "modelid1,"
-        //  7
-        "modelid2,"
-        //  8
-        "modelid3,"
-        //  9
-        "modelid4,"
-        // 10
         "name,"
         // 11
         "subname,"
@@ -544,9 +536,7 @@ void ObjectMgr::LoadCreatureTemplates()
     LoadCreatureTemplateResistances();
     LoadCreatureTemplateSpells();
 
-    // Checking needs to be done after loading because of the difficulty self referencing
-    for (auto const& ctPair : _creatureTemplateStore)
-        CheckCreatureTemplate(&ctPair.second);
+
 
     TC_LOG_INFO("server.loading", ">> Loaded {} creature definitions in {} ms", _creatureTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
@@ -581,14 +571,6 @@ void ObjectMgr::LoadCreatureTemplates2()
         //  5
         "KillCredit2,"
         //  6
-        "modelid1,"
-        //  7
-        "modelid2,"
-        //  8
-        "modelid3,"
-        //  9
-        "modelid4,"
-        // 10
         "name,"
         // 11
         "subname,"
@@ -718,13 +700,64 @@ void ObjectMgr::LoadCreatureTemplates2()
     LoadCreatureTemplateResistances();
     LoadCreatureTemplateSpells();
 
-    // Checking needs to be done after loading because of the difficulty self referencing
-    for (auto const& ctPair : _creatureTemplateStore)
-        CheckCreatureTemplate(&ctPair.second);
+
 
     TC_LOG_INFO("server.loading", ">> Loaded {} creature definitions in {} ms", _creatureTemplateStore.size(), GetMSTimeDiffToNow(oldMSTime));
 }
 
+
+void ObjectMgr::LoadCreatureTemplateModels()
+{
+    uint32 oldMSTime = getMSTime();
+
+    for (auto& ctPair : _creatureTemplateStore)
+        ctPair.second.Models.clear();
+
+    QueryResult result = WorldDatabase.Query("SELECT CreatureID, Idx, CreatureDisplayID, DisplayScale, Probability FROM creature_template_model ORDER BY CreatureID, Idx");
+
+    if (!result)
+    {
+        TC_LOG_INFO("server.loading", ">> Loaded 0 creature template models. DB table `creature_template_model` is empty.");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint32 creatureId = fields[0].GetUInt32();
+        /*uint32 idx =*/ fields[1].GetUInt32();
+        uint32 displayId = fields[2].GetUInt32();
+        float displayScale = fields[3].GetFloat();
+        float probability = fields[4].GetFloat();
+
+        CreatureTemplateContainer::iterator itr = _creatureTemplateStore.find(creatureId);
+        if (itr == _creatureTemplateStore.end())
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature_template_model` has model for non-existing creature entry ({}), skipped.", creatureId);
+            continue;
+        }
+
+        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(displayId);
+        if (!displayEntry)
+        {
+            TC_LOG_ERROR("sql.sql", "Table `creature_template_model` has non-existing display ID ({}) for creature entry ({}), skipped.", displayId, creatureId);
+            continue;
+        }
+
+        itr->second.Models.emplace_back(displayId, displayScale, probability);
+
+        ++count;
+    } while (result->NextRow());
+
+    // Checking needs to be done after loading because of difficulty self referencing and models
+    for (auto const& ctPair : _creatureTemplateStore)
+        CheckCreatureTemplate(&ctPair.second);
+
+    TC_LOG_INFO("server.loading", ">> Loaded {} creature template models in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
 
 void ObjectMgr::LoadCreatureTemplate(Field* fields)
 {
@@ -1117,6 +1150,8 @@ void ObjectMgr::LoadCreatureTemplateAddons()
     TC_LOG_INFO("server.loading", ">> Loaded {} creature template addons in {} ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+
+
 void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
 {
     if (!cInfo)
@@ -1332,72 +1367,23 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
     // used later for scale
     CreatureDisplayInfoEntry const* displayScaleEntry = nullptr;
 
-    if (cInfo->Modelid1)
+    if (cInfo->Models.empty())
+        TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) does not have any model defined in `creature_template_model`.", cInfo->Entry);
+    else
     {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid1);
-        if (!displayEntry)
+        for (CreatureModel const& model : cInfo->Models)
         {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid1 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid1);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid1 = 0;
+            CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(model.CreatureDisplayID);
+            if (!displayEntry)
+                TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing model display ID ({}), this can crash the client.", cInfo->Entry, model.CreatureDisplayID);
+            else if (!displayScaleEntry)
+                displayScaleEntry = displayEntry;
+
+            CreatureModelInfo const* modelInfo = GetCreatureModelInfo(model.CreatureDisplayID);
+            if (!modelInfo)
+                TC_LOG_ERROR("sql.sql", "No model data exist for display ID = {} listed by creature (Entry: {}).", model.CreatureDisplayID, cInfo->Entry);
         }
-        else
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid1);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid1` = {} listed by creature (Entry: {}).", cInfo->Modelid1, cInfo->Entry);
     }
-
-    if (cInfo->Modelid2)
-    {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid2);
-        if (!displayEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid2 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid2);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid2 = 0;
-        }
-        else if (!displayScaleEntry)
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid2);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid2` = {} listed by creature (Entry: {}).", cInfo->Modelid2, cInfo->Entry);
-    }
-
-    if (cInfo->Modelid3)
-    {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid3);
-        if (!displayEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid3 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid3);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid3 = 0;
-        }
-        else if (!displayScaleEntry)
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid3);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid3` = {} listed by creature (Entry: {}).", cInfo->Modelid3, cInfo->Entry);
-    }
-
-    if (cInfo->Modelid4)
-    {
-        CreatureDisplayInfoEntry const* displayEntry = sCreatureDisplayInfoStore.LookupEntry(cInfo->Modelid4);
-        if (!displayEntry)
-        {
-            TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) lists non-existing Modelid4 id ({}), this can crash the client.", cInfo->Entry, cInfo->Modelid4);
-            const_cast<CreatureTemplate*>(cInfo)->Modelid4 = 0;
-        }
-        else if (!displayScaleEntry)
-            displayScaleEntry = displayEntry;
-
-        CreatureModelInfo const* modelInfo = GetCreatureModelInfo(cInfo->Modelid4);
-        if (!modelInfo)
-            TC_LOG_ERROR("sql.sql", "No model data exist for `Modelid4` = {} listed by creature (Entry: {}).", cInfo->Modelid4, cInfo->Entry);
-    }
-
-    if (!displayScaleEntry)
-        TC_LOG_ERROR("sql.sql", "Creature (Entry: {}) does not have any existing display id in Modelid1/Modelid2/Modelid3/Modelid4.", cInfo->Entry);
 
     for (uint8 k = 0; k < MAX_KILL_CREDIT; ++k)
     {
@@ -1953,14 +1939,16 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId) const
     return nullptr;
 }
 
-uint32 ObjectMgr::ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data /*= nullptr*/)
+CreatureModel const* ObjectMgr::ChooseDisplayId(CreatureTemplate const* cinfo, CreatureData const* data /*= nullptr*/)
 {
     // Load creature model (display id)
     if (data && data->displayid)
-        return data->displayid;
+        if (CreatureModel const* model = cinfo->GetModelWithDisplayId(data->displayid))
+            return model;
 
     if (!(cinfo->flags_extra & CREATURE_FLAG_EXTRA_TRIGGER))
-        return cinfo->GetRandomValidModelId();
+        if (CreatureModel const* model = cinfo->GetRandomValidModel())
+            return model;
 
     // Triggers by default receive the invisible model
     return cinfo->GetFirstInvisibleModel();
@@ -1998,6 +1986,35 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32* display
         {
             // DisplayID changed
             *displayID = modelInfo->displayId_other_gender;
+            return minfo_tmp;
+        }
+    }
+
+    return modelInfo;
+}
+
+CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(CreatureModel* model, CreatureTemplate const* creatureTemplate) const
+{
+    if (!model)
+        return nullptr;
+
+    CreatureModelInfo const* modelInfo = GetCreatureModelInfo(model->CreatureDisplayID);
+    if (!modelInfo)
+        return nullptr;
+
+    // If a model for another gender exists, 50% chance to use it
+    if (modelInfo->displayId_other_gender != 0 && urand(0, 1) == 0)
+    {
+        CreatureModelInfo const* minfo_tmp = GetCreatureModelInfo(modelInfo->displayId_other_gender);
+        if (!minfo_tmp)
+            TC_LOG_ERROR("sql.sql", "Model (Entry: {}) has modelid_other_gender {} not found in table `creature_model_info`. ", model->CreatureDisplayID, modelInfo->displayId_other_gender);
+        else
+        {
+            model->CreatureDisplayID = modelInfo->displayId_other_gender;
+            if (creatureTemplate)
+                if (CreatureModel const* otherModel = creatureTemplate->GetModelWithDisplayId(model->CreatureDisplayID))
+                    model->DisplayScale = otherModel->DisplayScale;
+
             return minfo_tmp;
         }
     }
@@ -7096,8 +7113,9 @@ uint32 ObjectMgr::GetTaxiMountDisplayId(uint32 id, uint32 team, bool allowed_alt
         CreatureTemplate const* mount_info = GetCreatureTemplate(mount_entry);
         if (mount_info)
         {
-            mount_id = mount_info->GetRandomValidModelId();
-            if (!mount_id)
+            if (CreatureModel const* model = mount_info->GetRandomValidModel())
+                mount_id = model->CreatureDisplayID;
+            else
             {
                 TC_LOG_ERROR("sql.sql", "No displayid found for the taxi mount with the entry {}! Can't load it!", mount_entry);
                 return 0;

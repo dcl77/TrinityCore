@@ -408,10 +408,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     {
                         if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(e.action.morphOrMount.creature))
                         {
-                            uint32 displayId = ObjectMgr::ChooseDisplayId(ci);
-                            target->ToCreature()->SetDisplayId(displayId);
-                            TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature {} set displayid to {}",
-                                target->GetGUID().ToString(), displayId);
+                            if (CreatureModel const* model = ObjectMgr::ChooseDisplayId(ci))
+                            {
+                                target->ToCreature()->SetDisplayId(model->CreatureDisplayID);
+                                TC_LOG_DEBUG("scripts.ai", "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature {} set displayid to {}",
+                                    target->GetGUID().ToString(), model->CreatureDisplayID);
+                            }
                         }
                     }
                     //if no param1, then use value from param2 (modelId)
@@ -1103,7 +1105,8 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, Unit* unit, uint32 var0, u
                     if (e.action.morphOrMount.creature > 0)
                     {
                         if (CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(e.action.morphOrMount.creature))
-                            target->ToUnit()->Mount(ObjectMgr::ChooseDisplayId(cInfo));
+                            if (CreatureModel const* model = ObjectMgr::ChooseDisplayId(cInfo))
+                                target->ToUnit()->Mount(model->CreatureDisplayID);
                     }
                     else
                         target->ToUnit()->Mount(e.action.morphOrMount.model);

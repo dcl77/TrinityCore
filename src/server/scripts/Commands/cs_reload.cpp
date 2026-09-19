@@ -1243,6 +1243,7 @@ public:
         sObjectMgr->LoadItemTemplates();
         sObjectMgr->LoadCreatureTemplates();
         sObjectMgr->LoadCreatureTemplates2();
+        sObjectMgr->LoadCreatureTemplateModels();
         sObjectMgr->LoadGameObjectTemplate();
         sObjectMgr->LoadAreaCustomFlags();
         sObjectMgr->LoadCreatureSpecialRewards();

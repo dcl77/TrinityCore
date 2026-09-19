@@ -207,7 +207,7 @@ struct npc_chaotic_rift : public ScriptedAI
     void Reset() override
     {
         Initialize();
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
         DoCast(me, SPELL_ARCANEFORM, false);
     }
 
