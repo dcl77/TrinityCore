@@ -569,7 +569,7 @@ struct npc_dark_fiend : public ScriptedAI
 
     void InitializeAI() override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
         me->SetReactState(REACT_PASSIVE);
     }
 

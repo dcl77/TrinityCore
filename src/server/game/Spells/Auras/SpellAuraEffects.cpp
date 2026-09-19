@@ -2063,8 +2063,8 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     uint32 model_id = 0;
 
                     // choose a model, based on trigger flag
-                    if (uint32 modelid = ObjectMgr::ChooseDisplayId(ci))
-                        model_id = modelid;
+                    if (CreatureModel const* model = ObjectMgr::ChooseDisplayId(ci))
+                        model_id = model->CreatureDisplayID;
 
                     // Polymorph (sheep)
                     if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_MAGE && GetSpellInfo()->SpellIconID == 82 && GetSpellInfo()->SpellVisual[0] == 12978)
@@ -2110,7 +2110,9 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                 uint32 cr_id = target->GetAuraEffectsByType(SPELL_AURA_MOUNTED).front()->GetMiscValue();
                 if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(cr_id))
                 {
-                    uint32 displayID = ObjectMgr::ChooseDisplayId(ci);
+                    uint32 displayID = 0;
+                    if (CreatureModel const* model = ObjectMgr::ChooseDisplayId(ci))
+                        displayID = model->CreatureDisplayID;
                     sObjectMgr->GetCreatureModelRandomGender(&displayID);
 
                     target->SetMountDisplayId(displayID);
@@ -2599,9 +2601,17 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
         if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creatureEntry))
         {
             if (GetMiscValueB() > 0) // Choose proper modelid
-                displayId = GetMiscValueB() == 2 && creatureInfo->Modelid2 > 0 ? creatureInfo->Modelid2 : creatureInfo->Modelid1;
+            {
+                if (CreatureModel const* model = creatureInfo->GetModelByIdx(GetMiscValueB() - 1))
+                    displayId = model->CreatureDisplayID;
+                else if (CreatureModel const* model = creatureInfo->GetFirstValidModel())
+                    displayId = model->CreatureDisplayID;
+            }
             else // Should we choose random modelid in this case?
-                displayId = ObjectMgr::ChooseDisplayId(creatureInfo);
+            {
+                if (CreatureModel const* model = ObjectMgr::ChooseDisplayId(creatureInfo))
+                    displayId = model->CreatureDisplayID;
+            }
             sObjectMgr->GetCreatureModelRandomGender(&displayId);
 
             vehicleId = creatureInfo->VehicleId;
@@ -4607,7 +4617,9 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
 
                         if (CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(creatureEntry))
                         {
-                            uint32 displayID = ObjectMgr::ChooseDisplayId(creatureInfo);
+                            uint32 displayID = 0;
+                            if (CreatureModel const* model = ObjectMgr::ChooseDisplayId(creatureInfo))
+                                displayID = model->CreatureDisplayID;
                             sObjectMgr->GetCreatureModelRandomGender(&displayID);
 
                             target->SetMountDisplayId(displayID);

@@ -766,7 +766,7 @@ struct npc_icicle : public ScriptedAI
 
     void InitializeAI() override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid1);
+        me->SetDisplayFromModel(0);
         me->SetReactState(REACT_PASSIVE);
     }
 
@@ -823,7 +823,7 @@ struct npc_flash_freeze_init : public ScriptedAI
 
     void InitializeAI() override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
         me->SetReactState(REACT_PASSIVE);
     }
 
@@ -897,7 +897,7 @@ struct npc_flash_freeze_combat : public ScriptedAI
 
     void InitializeAI() override
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
         me->SetReactState(REACT_PASSIVE);
     }
 

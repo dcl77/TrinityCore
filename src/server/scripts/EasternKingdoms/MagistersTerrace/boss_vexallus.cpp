@@ -192,7 +192,7 @@ struct npc_pure_energy : public ScriptedAI
 {
     npc_pure_energy(Creature* creature) : ScriptedAI(creature)
     {
-        me->SetDisplayId(me->GetCreatureTemplate()->Modelid2);
+        me->SetDisplayFromModel(1);
     }
 
     void JustDied(Unit* killer) override
