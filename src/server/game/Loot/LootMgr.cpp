@@ -316,6 +316,9 @@ bool LootStoreItem::AllowedForPlayer(Player const* player) const
     if (!sConditionMgr->IsObjectMeetToConditions(const_cast<Player*>(player), conditions))
         return false;
 
+    if (reference > 0)
+        return true;
+
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(itemid);
     if (!pProto)
         return false;
